@@ -43,7 +43,8 @@ export interface SyncLogEntry {
   data_sources?: { name: string; source_type: string };
 }
 
-const fromTable = (table: string) => supabase.from(table as any);
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const fromTable = (table: string) => (supabase as any).from(table);
 
 export const useRiskTypes = () => {
   return useQuery({
