@@ -1,30 +1,18 @@
 import { motion } from "framer-motion";
+import { RiskType } from "@/hooks/useRiskData";
+import { Skeleton } from "@/components/ui/skeleton";
 
-const riskTypes = [
-  { name: "Fraud Risk", level: "High", score: 78, trend: "↑" },
-  { name: "Technology Risk", level: "Medium", score: 55, trend: "→" },
-  { name: "Country Risk", level: "Low", score: 32, trend: "↓" },
-  { name: "Conduct Risk", level: "High", score: 82, trend: "↑" },
-  { name: "ESG Risk", level: "Medium", score: 48, trend: "→" },
-  { name: "Compliance Risk", level: "Medium", score: 61, trend: "↑" },
-  { name: "Model Risk", level: "Low", score: 29, trend: "↓" },
-  { name: "Credit Risk", level: "High", score: 74, trend: "→" },
-  { name: "Market Risk", level: "Medium", score: 52, trend: "↓" },
-  { name: "Operational Risk", level: "High", score: 71, trend: "↑" },
-  { name: "Liquidity Risk", level: "Low", score: 25, trend: "↓" },
-  { name: "Reputational Risk", level: "Medium", score: 58, trend: "→" },
-  { name: "Strategic Risk", level: "Medium", score: 45, trend: "→" },
-  { name: "Legal Risk", level: "Low", score: 34, trend: "↓" },
-  { name: "Cyber Risk", level: "High", score: 85, trend: "↑" },
-  { name: "Third Party Risk", level: "Medium", score: 62, trend: "↑" },
-  { name: "Data Privacy Risk", level: "Medium", score: 57, trend: "→" },
-];
+interface RiskOverviewTableProps {
+  riskTypes?: RiskType[];
+  isLoading?: boolean;
+}
 
 const levelColor = (level: string) => {
   switch (level) {
-    case "High": return "text-risk-red bg-risk-red/10";
-    case "Medium": return "text-risk-amber bg-risk-amber/10";
-    case "Low": return "text-secondary bg-secondary/10";
+    case "high":
+    case "critical": return "text-risk-red bg-risk-red/10";
+    case "medium": return "text-risk-amber bg-risk-amber/10";
+    case "low": return "text-secondary bg-secondary/10";
     default: return "text-muted-foreground bg-muted";
   }
 };
@@ -35,12 +23,32 @@ const barColor = (score: number) => {
   return "bg-secondary";
 };
 
-const RiskOverviewTable = () => {
+const trendSymbol = (trend: string) => {
+  switch (trend) {
+    case "increasing": return "↑";
+    case "decreasing": return "↓";
+    default: return "→";
+  }
+};
+
+const RiskOverviewTable = ({ riskTypes, isLoading }: RiskOverviewTableProps) => {
+  if (isLoading) {
+    return (
+      <div className="bg-card rounded-xl shadow-card border border-border p-5 space-y-3">
+        {Array.from({ length: 5 }).map((_, i) => (
+          <Skeleton key={i} className="h-10 w-full" />
+        ))}
+      </div>
+    );
+  }
+
+  const risks = riskTypes || [];
+
   return (
     <div className="bg-card rounded-xl shadow-card border border-border overflow-hidden">
       <div className="px-5 py-4 border-b border-border">
-        <h3 className="font-display font-semibold text-foreground">17 Principal Risk Types</h3>
-        <p className="text-xs text-muted-foreground mt-0.5">Aggregated risk scores across all data sources</p>
+        <h3 className="font-display font-semibold text-foreground">{risks.length} Principal Risk Types</h3>
+        <p className="text-xs text-muted-foreground mt-0.5">Live data from Lovable Cloud database</p>
       </div>
       <div className="overflow-x-auto">
         <table className="w-full text-sm">
@@ -54,9 +62,9 @@ const RiskOverviewTable = () => {
             </tr>
           </thead>
           <tbody>
-            {riskTypes.map((risk, i) => (
+            {risks.map((risk, i) => (
               <motion.tr
-                key={risk.name}
+                key={risk.id}
                 initial={{ opacity: 0, x: -10 }}
                 animate={{ opacity: 1, x: 0 }}
                 transition={{ delay: i * 0.03 }}
@@ -64,22 +72,22 @@ const RiskOverviewTable = () => {
               >
                 <td className="px-5 py-3 font-medium text-foreground">{risk.name}</td>
                 <td className="px-5 py-3">
-                  <span className={`inline-block px-2.5 py-1 rounded-full text-xs font-semibold ${levelColor(risk.level)}`}>
-                    {risk.level}
+                  <span className={`inline-block px-2.5 py-1 rounded-full text-xs font-semibold capitalize ${levelColor(risk.risk_level)}`}>
+                    {risk.risk_level}
                   </span>
                 </td>
-                <td className="px-5 py-3 font-mono font-semibold text-foreground">{risk.score}</td>
+                <td className="px-5 py-3 font-mono font-semibold text-foreground">{risk.risk_score}</td>
                 <td className="px-5 py-3">
                   <div className="w-full bg-muted rounded-full h-2">
                     <motion.div
                       initial={{ width: 0 }}
-                      animate={{ width: `${risk.score}%` }}
+                      animate={{ width: `${risk.risk_score}%` }}
                       transition={{ duration: 0.8, delay: i * 0.03 }}
-                      className={`h-2 rounded-full ${barColor(risk.score)}`}
+                      className={`h-2 rounded-full ${barColor(risk.risk_score)}`}
                     />
                   </div>
                 </td>
-                <td className="px-5 py-3 text-center text-lg">{risk.trend}</td>
+                <td className="px-5 py-3 text-center text-lg">{trendSymbol(risk.trend)}</td>
               </motion.tr>
             ))}
           </tbody>
