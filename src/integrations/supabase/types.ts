@@ -14,7 +14,196 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      data_sources: {
+        Row: {
+          connection_config: Json
+          created_at: string
+          error_message: string | null
+          id: string
+          integration_status: string
+          last_sync_at: string | null
+          name: string
+          records_synced: number
+          source_type: string
+          sync_status: string
+          updated_at: string
+        }
+        Insert: {
+          connection_config?: Json
+          created_at?: string
+          error_message?: string | null
+          id?: string
+          integration_status?: string
+          last_sync_at?: string | null
+          name: string
+          records_synced?: number
+          source_type: string
+          sync_status?: string
+          updated_at?: string
+        }
+        Update: {
+          connection_config?: Json
+          created_at?: string
+          error_message?: string | null
+          id?: string
+          integration_status?: string
+          last_sync_at?: string | null
+          name?: string
+          records_synced?: number
+          source_type?: string
+          sync_status?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      risk_register: {
+        Row: {
+          created_at: string
+          description: string | null
+          id: string
+          impact: number
+          likelihood: number
+          mitigation: string | null
+          owner: string | null
+          residual_risk_level: string | null
+          risk_level: string
+          risk_score: number | null
+          risk_type_id: string | null
+          source: string
+          status: string
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          impact?: number
+          likelihood?: number
+          mitigation?: string | null
+          owner?: string | null
+          residual_risk_level?: string | null
+          risk_level?: string
+          risk_score?: number | null
+          risk_type_id?: string | null
+          source?: string
+          status?: string
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          impact?: number
+          likelihood?: number
+          mitigation?: string | null
+          owner?: string | null
+          residual_risk_level?: string | null
+          risk_level?: string
+          risk_score?: number | null
+          risk_type_id?: string | null
+          source?: string
+          status?: string
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "risk_register_risk_type_id_fkey"
+            columns: ["risk_type_id"]
+            isOneToOne: false
+            referencedRelation: "risk_types"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      risk_types: {
+        Row: {
+          category: string | null
+          created_at: string
+          description: string | null
+          id: string
+          name: string
+          owner: string | null
+          risk_level: string
+          risk_score: number
+          trend: string
+          updated_at: string
+        }
+        Insert: {
+          category?: string | null
+          created_at?: string
+          description?: string | null
+          id?: string
+          name: string
+          owner?: string | null
+          risk_level?: string
+          risk_score?: number
+          trend?: string
+          updated_at?: string
+        }
+        Update: {
+          category?: string | null
+          created_at?: string
+          description?: string | null
+          id?: string
+          name?: string
+          owner?: string | null
+          risk_level?: string
+          risk_score?: number
+          trend?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      sync_log: {
+        Row: {
+          completed_at: string | null
+          data_source_id: string | null
+          error_details: Json | null
+          id: string
+          records_failed: number
+          records_processed: number
+          started_at: string
+          status: string
+          sync_type: string
+          target_system: string | null
+        }
+        Insert: {
+          completed_at?: string | null
+          data_source_id?: string | null
+          error_details?: Json | null
+          id?: string
+          records_failed?: number
+          records_processed?: number
+          started_at?: string
+          status?: string
+          sync_type?: string
+          target_system?: string | null
+        }
+        Update: {
+          completed_at?: string | null
+          data_source_id?: string | null
+          error_details?: Json | null
+          id?: string
+          records_failed?: number
+          records_processed?: number
+          started_at?: string
+          status?: string
+          sync_type?: string
+          target_system?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "sync_log_data_source_id_fkey"
+            columns: ["data_source_id"]
+            isOneToOne: false
+            referencedRelation: "data_sources"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
