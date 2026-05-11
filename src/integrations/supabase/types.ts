@@ -14,14 +14,75 @@ export type Database = {
   }
   public: {
     Tables: {
+      controls: {
+        Row: {
+          control_type: string
+          created_at: string
+          description: string | null
+          effectiveness: string
+          frequency: string
+          id: string
+          last_tested_at: string | null
+          name: string
+          next_test_due: string | null
+          owner: string | null
+          risk_type_id: string | null
+          source: string
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          control_type?: string
+          created_at?: string
+          description?: string | null
+          effectiveness?: string
+          frequency?: string
+          id?: string
+          last_tested_at?: string | null
+          name: string
+          next_test_due?: string | null
+          owner?: string | null
+          risk_type_id?: string | null
+          source?: string
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          control_type?: string
+          created_at?: string
+          description?: string | null
+          effectiveness?: string
+          frequency?: string
+          id?: string
+          last_tested_at?: string | null
+          name?: string
+          next_test_due?: string | null
+          owner?: string | null
+          risk_type_id?: string | null
+          source?: string
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "controls_risk_type_id_fkey"
+            columns: ["risk_type_id"]
+            isOneToOne: false
+            referencedRelation: "risk_types"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       data_sources: {
         Row: {
           connection_config: Json
           created_at: string
+          description: string | null
           error_message: string | null
           id: string
           integration_status: string
           last_sync_at: string | null
+          location: string | null
           name: string
           records_synced: number
           source_type: string
@@ -31,10 +92,12 @@ export type Database = {
         Insert: {
           connection_config?: Json
           created_at?: string
+          description?: string | null
           error_message?: string | null
           id?: string
           integration_status?: string
           last_sync_at?: string | null
+          location?: string | null
           name: string
           records_synced?: number
           source_type: string
@@ -44,10 +107,12 @@ export type Database = {
         Update: {
           connection_config?: Json
           created_at?: string
+          description?: string | null
           error_message?: string | null
           id?: string
           integration_status?: string
           last_sync_at?: string | null
+          location?: string | null
           name?: string
           records_synced?: number
           source_type?: string
@@ -120,6 +185,74 @@ export type Database = {
         Relationships: [
           {
             foreignKeyName: "kri_register_risk_type_id_fkey"
+            columns: ["risk_type_id"]
+            isOneToOne: false
+            referencedRelation: "risk_types"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      rcsa_assessments: {
+        Row: {
+          approved_at: string | null
+          approver: string | null
+          assessor: string | null
+          business_unit: string
+          control_score: number
+          created_at: string
+          due_date: string | null
+          id: string
+          inherent_score: number
+          notes: string | null
+          period: string
+          residual_score: number
+          risk_type_id: string | null
+          status: string
+          submitted_at: string | null
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          approved_at?: string | null
+          approver?: string | null
+          assessor?: string | null
+          business_unit: string
+          control_score?: number
+          created_at?: string
+          due_date?: string | null
+          id?: string
+          inherent_score?: number
+          notes?: string | null
+          period: string
+          residual_score?: number
+          risk_type_id?: string | null
+          status?: string
+          submitted_at?: string | null
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          approved_at?: string | null
+          approver?: string | null
+          assessor?: string | null
+          business_unit?: string
+          control_score?: number
+          created_at?: string
+          due_date?: string | null
+          id?: string
+          inherent_score?: number
+          notes?: string | null
+          period?: string
+          residual_score?: number
+          risk_type_id?: string | null
+          status?: string
+          submitted_at?: string | null
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "rcsa_assessments_risk_type_id_fkey"
             columns: ["risk_type_id"]
             isOneToOne: false
             referencedRelation: "risk_types"
