@@ -56,6 +56,77 @@ export type Database = {
         }
         Relationships: []
       }
+      kri_register: {
+        Row: {
+          amber_threshold: number
+          created_at: string
+          current_value: number
+          description: string | null
+          direction: string
+          frequency: string
+          green_threshold: number
+          id: string
+          last_measured_at: string | null
+          metric_unit: string
+          name: string
+          owner: string | null
+          red_threshold: number
+          risk_type_id: string | null
+          source: string
+          status: string
+          trend: string
+          updated_at: string
+        }
+        Insert: {
+          amber_threshold?: number
+          created_at?: string
+          current_value?: number
+          description?: string | null
+          direction?: string
+          frequency?: string
+          green_threshold?: number
+          id?: string
+          last_measured_at?: string | null
+          metric_unit?: string
+          name: string
+          owner?: string | null
+          red_threshold?: number
+          risk_type_id?: string | null
+          source?: string
+          status?: string
+          trend?: string
+          updated_at?: string
+        }
+        Update: {
+          amber_threshold?: number
+          created_at?: string
+          current_value?: number
+          description?: string | null
+          direction?: string
+          frequency?: string
+          green_threshold?: number
+          id?: string
+          last_measured_at?: string | null
+          metric_unit?: string
+          name?: string
+          owner?: string | null
+          red_threshold?: number
+          risk_type_id?: string | null
+          source?: string
+          status?: string
+          trend?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "kri_register_risk_type_id_fkey"
+            columns: ["risk_type_id"]
+            isOneToOne: false
+            referencedRelation: "risk_types"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       risk_register: {
         Row: {
           created_at: string
