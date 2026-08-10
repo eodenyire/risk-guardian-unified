@@ -121,6 +121,50 @@ export type Database = {
         }
         Relationships: []
       }
+      kri_observations: {
+        Row: {
+          breached: boolean
+          created_at: string
+          id: string
+          kri_id: string
+          notes: string | null
+          observed_at: string
+          rag: string | null
+          source: string
+          value: number
+        }
+        Insert: {
+          breached?: boolean
+          created_at?: string
+          id?: string
+          kri_id: string
+          notes?: string | null
+          observed_at?: string
+          rag?: string | null
+          source?: string
+          value: number
+        }
+        Update: {
+          breached?: boolean
+          created_at?: string
+          id?: string
+          kri_id?: string
+          notes?: string | null
+          observed_at?: string
+          rag?: string | null
+          source?: string
+          value?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "kri_observations_kri_id_fkey"
+            columns: ["kri_id"]
+            isOneToOne: false
+            referencedRelation: "kri_register"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       kri_register: {
         Row: {
           amber_threshold: number
@@ -136,6 +180,7 @@ export type Database = {
           name: string
           owner: string | null
           red_threshold: number
+          risk_sub_type_id: string | null
           risk_type_id: string | null
           source: string
           status: string
@@ -156,6 +201,7 @@ export type Database = {
           name: string
           owner?: string | null
           red_threshold?: number
+          risk_sub_type_id?: string | null
           risk_type_id?: string | null
           source?: string
           status?: string
@@ -176,6 +222,7 @@ export type Database = {
           name?: string
           owner?: string | null
           red_threshold?: number
+          risk_sub_type_id?: string | null
           risk_type_id?: string | null
           source?: string
           status?: string
@@ -183,6 +230,13 @@ export type Database = {
           updated_at?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "kri_register_risk_sub_type_id_fkey"
+            columns: ["risk_sub_type_id"]
+            isOneToOne: false
+            referencedRelation: "risk_sub_types"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "kri_register_risk_type_id_fkey"
             columns: ["risk_type_id"]
@@ -364,6 +418,135 @@ export type Database = {
           },
         ]
       }
+      risk_appetite: {
+        Row: {
+          appetite_level: string
+          approved_at: string | null
+          approved_by: string | null
+          created_at: string
+          escalation_trigger: string | null
+          id: string
+          metric_unit: string | null
+          next_review_date: string | null
+          review_frequency: string
+          risk_sub_type_id: string | null
+          risk_type_id: string | null
+          statement: string
+          status: string
+          tolerance_limit: number | null
+          updated_at: string
+        }
+        Insert: {
+          appetite_level?: string
+          approved_at?: string | null
+          approved_by?: string | null
+          created_at?: string
+          escalation_trigger?: string | null
+          id?: string
+          metric_unit?: string | null
+          next_review_date?: string | null
+          review_frequency?: string
+          risk_sub_type_id?: string | null
+          risk_type_id?: string | null
+          statement: string
+          status?: string
+          tolerance_limit?: number | null
+          updated_at?: string
+        }
+        Update: {
+          appetite_level?: string
+          approved_at?: string | null
+          approved_by?: string | null
+          created_at?: string
+          escalation_trigger?: string | null
+          id?: string
+          metric_unit?: string | null
+          next_review_date?: string | null
+          review_frequency?: string
+          risk_sub_type_id?: string | null
+          risk_type_id?: string | null
+          statement?: string
+          status?: string
+          tolerance_limit?: number | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "risk_appetite_risk_sub_type_id_fkey"
+            columns: ["risk_sub_type_id"]
+            isOneToOne: false
+            referencedRelation: "risk_sub_types"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "risk_appetite_risk_type_id_fkey"
+            columns: ["risk_type_id"]
+            isOneToOne: false
+            referencedRelation: "risk_types"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      risk_contagion_links: {
+        Row: {
+          confidence: number | null
+          created_at: string
+          direction: string
+          id: string
+          lag_days: number
+          last_evaluated_at: string | null
+          method: string
+          rationale: string | null
+          source_risk_type_id: string
+          strength: number
+          target_risk_type_id: string
+          updated_at: string
+        }
+        Insert: {
+          confidence?: number | null
+          created_at?: string
+          direction?: string
+          id?: string
+          lag_days?: number
+          last_evaluated_at?: string | null
+          method?: string
+          rationale?: string | null
+          source_risk_type_id: string
+          strength?: number
+          target_risk_type_id: string
+          updated_at?: string
+        }
+        Update: {
+          confidence?: number | null
+          created_at?: string
+          direction?: string
+          id?: string
+          lag_days?: number
+          last_evaluated_at?: string | null
+          method?: string
+          rationale?: string | null
+          source_risk_type_id?: string
+          strength?: number
+          target_risk_type_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "risk_contagion_links_source_risk_type_id_fkey"
+            columns: ["source_risk_type_id"]
+            isOneToOne: false
+            referencedRelation: "risk_types"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "risk_contagion_links_target_risk_type_id_fkey"
+            columns: ["target_risk_type_id"]
+            isOneToOne: false
+            referencedRelation: "risk_types"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       risk_register: {
         Row: {
           created_at: string
@@ -426,14 +609,70 @@ export type Database = {
           },
         ]
       }
+      risk_sub_types: {
+        Row: {
+          code: string | null
+          created_at: string
+          description: string | null
+          display_order: number
+          id: string
+          inherent_rating: string
+          name: string
+          owner: string | null
+          residual_rating: string | null
+          risk_type_id: string
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          code?: string | null
+          created_at?: string
+          description?: string | null
+          display_order?: number
+          id?: string
+          inherent_rating?: string
+          name: string
+          owner?: string | null
+          residual_rating?: string | null
+          risk_type_id: string
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          code?: string | null
+          created_at?: string
+          description?: string | null
+          display_order?: number
+          id?: string
+          inherent_rating?: string
+          name?: string
+          owner?: string | null
+          residual_rating?: string | null
+          risk_type_id?: string
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "risk_sub_types_risk_type_id_fkey"
+            columns: ["risk_type_id"]
+            isOneToOne: false
+            referencedRelation: "risk_types"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       risk_types: {
         Row: {
           category: string | null
+          code: string | null
           created_at: string
           description: string | null
+          display_order: number
           id: string
           name: string
           owner: string | null
+          prt_category: string
           risk_level: string
           risk_score: number
           trend: string
@@ -441,11 +680,14 @@ export type Database = {
         }
         Insert: {
           category?: string | null
+          code?: string | null
           created_at?: string
           description?: string | null
+          display_order?: number
           id?: string
           name: string
           owner?: string | null
+          prt_category?: string
           risk_level?: string
           risk_score?: number
           trend?: string
@@ -453,11 +695,14 @@ export type Database = {
         }
         Update: {
           category?: string | null
+          code?: string | null
           created_at?: string
           description?: string | null
+          display_order?: number
           id?: string
           name?: string
           owner?: string | null
+          prt_category?: string
           risk_level?: string
           risk_score?: number
           trend?: string
@@ -550,6 +795,16 @@ export type Database = {
     }
     Functions: {
       current_user_org: { Args: never; Returns: string }
+      evaluate_rag: {
+        Args: {
+          _amber: number
+          _direction: string
+          _green: number
+          _red: number
+          _value: number
+        }
+        Returns: string
+      }
       has_role: {
         Args: {
           _org_id: string
