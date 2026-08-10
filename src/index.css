@@ -56,6 +56,12 @@
     --red-risk: 0 72% 51%;
     --blue-info: 210 80% 52%;
 
+    /* RAG status tokens */
+    --risk-green: 150 52% 35%;
+    --risk-amber: 38 92% 50%;
+    --risk-red: 0 72% 51%;
+    --risk-grey: 220 10% 55%;
+
     --gradient-navy: linear-gradient(135deg, hsl(220 45% 12%), hsl(220 40% 22%));
     --gradient-green: linear-gradient(135deg, hsl(150 52% 35%), hsl(150 60% 45%));
     --gradient-card: linear-gradient(145deg, hsl(0 0% 100%), hsl(220 20% 97%));
