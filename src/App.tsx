@@ -10,6 +10,9 @@ import Index from "./pages/Index";
 import Auth from "./pages/Auth";
 import Settings from "./pages/Settings";
 import RiskRegister from "./pages/RiskRegister";
+import RiskUniverse from "./pages/RiskUniverse";
+import RiskAppetite from "./pages/RiskAppetite";
+import Contagion from "./pages/Contagion";
 import KRI from "./pages/KRI";
 import Controls from "./pages/Controls";
 import RCSA from "./pages/RCSA";
@@ -31,7 +34,10 @@ const App = () => (
             <Route path="/auth" element={<Auth />} />
             <Route element={<ProtectedRoute><AppLayout /></ProtectedRoute>}>
               <Route path="/" element={<Index />} />
+              <Route path="/risk-universe" element={<RiskUniverse />} />
               <Route path="/risk-register" element={<RiskRegister />} />
+              <Route path="/appetite" element={<RiskAppetite />} />
+              <Route path="/contagion" element={<Contagion />} />
               <Route path="/kri" element={<KRI />} />
               <Route path="/controls" element={<Controls />} />
               <Route path="/rcsa" element={<RCSA />} />
