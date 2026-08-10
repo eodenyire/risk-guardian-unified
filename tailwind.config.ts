@@ -72,8 +72,10 @@ export default {
           glow: "hsl(var(--green-glow))",
         },
         risk: {
+          green: "hsl(var(--risk-green))",
           amber: "hsl(var(--amber-risk))",
           red: "hsl(var(--red-risk))",
+          grey: "hsl(var(--risk-grey))",
           blue: "hsl(var(--blue-info))",
         },
       },

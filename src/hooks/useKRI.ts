@@ -5,6 +5,7 @@ import { toast } from "sonner";
 export interface KRI {
   id: string;
   risk_type_id: string | null;
+  risk_sub_type_id: string | null;
   name: string;
   description: string | null;
   metric_unit: string;

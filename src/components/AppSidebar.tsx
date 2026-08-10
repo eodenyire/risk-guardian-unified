@@ -2,18 +2,22 @@ import { Link, useLocation } from "react-router-dom";
 import { motion } from "framer-motion";
 import {
   LayoutDashboard, ShieldAlert, BarChart3, Settings2,
-  FileCheck, Thermometer, Link2, Database, ChevronLeft, ChevronRight
+  FileCheck, Thermometer, Link2, Database, ChevronLeft, ChevronRight,
+  Network, Target, Share2
 } from "lucide-react";
 import { useState } from "react";
 import wekezaLogo from "@/assets/wekeza_logo.png";
 
 const navItems = [
   { path: "/", label: "Dashboard", icon: LayoutDashboard },
+  { path: "/risk-universe", label: "Risk Universe", icon: Network },
   { path: "/risk-register", label: "Risk Register", icon: ShieldAlert },
   { path: "/kri", label: "KRI Monitor", icon: BarChart3 },
+  { path: "/appetite", label: "Risk Appetite", icon: Target },
   { path: "/controls", label: "Controls", icon: Settings2 },
   { path: "/rcsa", label: "RCSA", icon: FileCheck },
   { path: "/heat-map", label: "Heat Map", icon: Thermometer },
+  { path: "/contagion", label: "Contagion", icon: Share2 },
   { path: "/integrations", label: "Integrations", icon: Link2 },
   { path: "/data-sources", label: "Data Sources", icon: Database },
 ];
