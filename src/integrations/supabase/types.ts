@@ -121,6 +121,153 @@ export type Database = {
         }
         Relationships: []
       }
+      irrbb_gap_entries: {
+        Row: {
+          as_of_date: string
+          bucket: string
+          bucket_order: number
+          created_at: string
+          currency: string
+          id: string
+          notes: string | null
+          off_balance_sheet: number
+          rate_sensitive_assets: number
+          rate_sensitive_liabilities: number
+          source: string
+          updated_at: string
+        }
+        Insert: {
+          as_of_date?: string
+          bucket: string
+          bucket_order?: number
+          created_at?: string
+          currency?: string
+          id?: string
+          notes?: string | null
+          off_balance_sheet?: number
+          rate_sensitive_assets?: number
+          rate_sensitive_liabilities?: number
+          source?: string
+          updated_at?: string
+        }
+        Update: {
+          as_of_date?: string
+          bucket?: string
+          bucket_order?: number
+          created_at?: string
+          currency?: string
+          id?: string
+          notes?: string | null
+          off_balance_sheet?: number
+          rate_sensitive_assets?: number
+          rate_sensitive_liabilities?: number
+          source?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      irrbb_limits: {
+        Row: {
+          amber_threshold: number
+          basis: string
+          created_at: string
+          currency: string
+          escalation: string | null
+          green_threshold: number
+          id: string
+          limit_value: number
+          metric: string
+          owner: string | null
+          red_threshold: number
+          scenario: string
+          status: string
+          unit: string
+          updated_at: string
+        }
+        Insert: {
+          amber_threshold?: number
+          basis?: string
+          created_at?: string
+          currency?: string
+          escalation?: string | null
+          green_threshold?: number
+          id?: string
+          limit_value?: number
+          metric: string
+          owner?: string | null
+          red_threshold?: number
+          scenario?: string
+          status?: string
+          unit?: string
+          updated_at?: string
+        }
+        Update: {
+          amber_threshold?: number
+          basis?: string
+          created_at?: string
+          currency?: string
+          escalation?: string | null
+          green_threshold?: number
+          id?: string
+          limit_value?: number
+          metric?: string
+          owner?: string | null
+          red_threshold?: number
+          scenario?: string
+          status?: string
+          unit?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      irrbb_scenario_results: {
+        Row: {
+          as_of_date: string
+          breached: boolean
+          created_at: string
+          currency: string
+          delta_eve: number
+          delta_nii: number
+          eve_pct_tier1: number
+          id: string
+          nii_pct_income: number
+          notes: string | null
+          scenario: string
+          source: string
+          updated_at: string
+        }
+        Insert: {
+          as_of_date?: string
+          breached?: boolean
+          created_at?: string
+          currency?: string
+          delta_eve?: number
+          delta_nii?: number
+          eve_pct_tier1?: number
+          id?: string
+          nii_pct_income?: number
+          notes?: string | null
+          scenario: string
+          source?: string
+          updated_at?: string
+        }
+        Update: {
+          as_of_date?: string
+          breached?: boolean
+          created_at?: string
+          currency?: string
+          delta_eve?: number
+          delta_nii?: number
+          eve_pct_tier1?: number
+          id?: string
+          nii_pct_income?: number
+          notes?: string | null
+          scenario?: string
+          source?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       kri_observations: {
         Row: {
           breached: boolean
