@@ -19,6 +19,9 @@ import RCSA from "./pages/RCSA";
 import HeatMap from "./pages/HeatMap";
 import Integrations from "./pages/Integrations";
 import DataSources from "./pages/DataSources";
+import IRRBB from "./pages/IRRBB";
+import PrtModule from "./pages/PrtModule";
+import RiskDataMaster from "./pages/RiskDataMaster";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
