@@ -640,42 +640,57 @@ export type Database = {
           created_at: string
           direction: string
           id: string
+          inherent_score: number
           lag_days: number
           last_evaluated_at: string | null
           method: string
+          process: string | null
           rationale: string | null
+          residual_score: number
           source_risk_type_id: string
           strength: number
           target_risk_type_id: string
+          transmission_channel: string
           updated_at: string
+          weight: number
         }
         Insert: {
           confidence?: number | null
           created_at?: string
           direction?: string
           id?: string
+          inherent_score?: number
           lag_days?: number
           last_evaluated_at?: string | null
           method?: string
+          process?: string | null
           rationale?: string | null
+          residual_score?: number
           source_risk_type_id: string
           strength?: number
           target_risk_type_id: string
+          transmission_channel?: string
           updated_at?: string
+          weight?: number
         }
         Update: {
           confidence?: number | null
           created_at?: string
           direction?: string
           id?: string
+          inherent_score?: number
           lag_days?: number
           last_evaluated_at?: string | null
           method?: string
+          process?: string | null
           rationale?: string | null
+          residual_score?: number
           source_risk_type_id?: string
           strength?: number
           target_risk_type_id?: string
+          transmission_channel?: string
           updated_at?: string
+          weight?: number
         }
         Relationships: [
           {
