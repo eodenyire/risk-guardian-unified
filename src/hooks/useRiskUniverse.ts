@@ -79,7 +79,28 @@ export interface ContagionLink {
   confidence: number | null;
   rationale: string | null;
   last_evaluated_at: string | null;
+  transmission_channel: string;
+  process: string | null;
+  inherent_score: number;
+  residual_score: number;
+  weight: number;
 }
+
+export const TRANSMISSION_CHANNELS = [
+  "credit",
+  "market",
+  "funding_liquidity",
+  "operational",
+  "technology",
+  "people",
+  "third_party",
+  "legal_regulatory",
+  "reputational",
+  "strategic",
+] as const;
+
+export const channelLabel = (c: string) =>
+  c.replace(/_/g, " ").replace(/\b\w/g, (m) => m.toUpperCase());
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const fromTable = (t: string) => (supabase as any).from(t);
