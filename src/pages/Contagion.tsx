@@ -36,10 +36,17 @@ interface FormState {
   direction: string;
   method: string;
   rationale: string;
+  transmission_channel: string;
+  process: string;
+  inherent_score: number;
+  residual_score: number;
+  weight: number;
 }
 const emptyForm: FormState = {
   source_risk_type_id: "", target_risk_type_id: "", strength: 0.5,
   lag_days: 30, direction: "positive", method: "manual", rationale: "",
+  transmission_channel: "operational", process: "", inherent_score: 50,
+  residual_score: 30, weight: 1,
 };
 
 const Contagion = () => {

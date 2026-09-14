@@ -73,6 +73,30 @@ export const useDataSources = () => {
   });
 };
 
+/** Pulls fresh observations from registered data sources into the KRI pipeline. */
+export const useRunIngestion = () => {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async (dataSourceId?: string) => {
+      const { data, error } = await supabase.functions.invoke("ingest-observations", {
+        body: dataSourceId ? { data_source_id: dataSourceId } : {},
+      });
+      if (error) throw error;
+      return data as { ok: boolean; sources?: { source: string; processed: number; failed: number }[] };
+    },
+    onSuccess: (res) => {
+      qc.invalidateQueries({ queryKey: ["data-sources"] });
+      qc.invalidateQueries({ queryKey: ["sync-log"] });
+      qc.invalidateQueries({ queryKey: ["kri-observations"] });
+      qc.invalidateQueries({ queryKey: ["kris"] });
+      const total = (res?.sources ?? []).reduce((a, s) => a + s.processed, 0);
+      const failed = (res?.sources ?? []).reduce((a, s) => a + s.failed, 0);
+      toast.success(`Ingestion complete — ${total} observation(s) captured${failed ? `, ${failed} failed` : ""}`);
+    },
+    onError: (e: Error) => toast.error(e.message),
+  });
+};
+
 export const useSyncLog = () => {
   return useQuery({
     queryKey: ["sync-log"],
