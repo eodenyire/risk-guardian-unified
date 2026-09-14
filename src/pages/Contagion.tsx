@@ -298,7 +298,7 @@ const Contagion = () => {
                         <td className="sticky left-0 bg-card z-10 p-2 whitespace-nowrap font-medium">{r.name}</td>
                         {(prts ?? []).map((c) => {
                           const l = linkMap.get(`${r.id}|${c.id}`);
-                          const v = l ? Number(l.strength) : 0;
+                          const v = l ? effectiveStrength(l) : 0;
                           return (
                             <Tooltip key={c.id}>
                               <TooltipTrigger asChild>
