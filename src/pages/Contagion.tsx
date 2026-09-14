@@ -16,7 +16,8 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import {
   usePrincipalRiskTypes, useContagionLinks, useUpsertContagionLink, useDeleteContagionLink,
-  propagateShock, networkStats, ContagionLink,
+  propagateShock, networkStats, ContagionLink, effectiveStrength,
+  TRANSMISSION_CHANNELS, channelLabel,
 } from "@/hooks/useRiskUniverse";
 import { useKRIs } from "@/hooks/useKRI";
 
@@ -36,10 +37,17 @@ interface FormState {
   direction: string;
   method: string;
   rationale: string;
+  transmission_channel: string;
+  process: string;
+  inherent_score: number;
+  residual_score: number;
+  weight: number;
 }
 const emptyForm: FormState = {
   source_risk_type_id: "", target_risk_type_id: "", strength: 0.5,
   lag_days: 30, direction: "positive", method: "manual", rationale: "",
+  transmission_channel: "operational", process: "", inherent_score: 50,
+  residual_score: 30, weight: 1,
 };
 
 const Contagion = () => {
@@ -100,6 +108,11 @@ const Contagion = () => {
       id: l.id, source_risk_type_id: l.source_risk_type_id, target_risk_type_id: l.target_risk_type_id,
       strength: Number(l.strength), lag_days: l.lag_days, direction: l.direction,
       method: l.method, rationale: l.rationale ?? "",
+      transmission_channel: l.transmission_channel ?? "operational",
+      process: l.process ?? "",
+      inherent_score: Number(l.inherent_score ?? 50),
+      residual_score: Number(l.residual_score ?? 30),
+      weight: Number(l.weight ?? 1),
     });
     setOpen(true);
   };
@@ -260,7 +273,9 @@ const Contagion = () => {
           <Card className="shadow-card">
             <CardHeader>
               <CardTitle className="text-lg">Transmission Matrix</CardTitle>
-              <p className="text-sm text-muted-foreground">Rows transmit to columns. Cell shade = link strength.</p>
+              <p className="text-sm text-muted-foreground">
+                Rows transmit to columns. Cell shade = effective transmission (strength x weight x residual/inherent control factor).
+              </p>
             </CardHeader>
             <CardContent className="overflow-auto">
               {isLoading ? <Skeleton className="h-96 w-full" /> : (
@@ -285,7 +300,7 @@ const Contagion = () => {
                         <td className="sticky left-0 bg-card z-10 p-2 whitespace-nowrap font-medium">{r.name}</td>
                         {(prts ?? []).map((c) => {
                           const l = linkMap.get(`${r.id}|${c.id}`);
-                          const v = l ? Number(l.strength) : 0;
+                          const v = l ? effectiveStrength(l) : 0;
                           return (
                             <Tooltip key={c.id}>
                               <TooltipTrigger asChild>
@@ -299,7 +314,13 @@ const Contagion = () => {
                               {l && (
                                 <TooltipContent className="max-w-xs">
                                   <p className="font-medium">{r.name} <ArrowRight className="inline h-3 w-3" /> {c.name}</p>
-                                  <p className="text-xs mt-1">Strength {v.toFixed(2)} · lag {l.lag_days}d</p>
+                                  <p className="text-xs mt-1">
+                                    Effective {v.toFixed(2)} · raw {Number(l.strength).toFixed(2)} · weight {Number(l.weight ?? 1).toFixed(2)} · lag {l.lag_days}d
+                                  </p>
+                                  <p className="text-xs">
+                                    {channelLabel(l.transmission_channel ?? "operational")}
+                                    {l.process ? ` · ${l.process}` : ""} · inherent {Number(l.inherent_score ?? 0).toFixed(0)} → residual {Number(l.residual_score ?? 0).toFixed(0)}
+                                  </p>
                                   {l.rationale && <p className="text-xs mt-1 text-muted-foreground">{l.rationale}</p>}
                                 </TooltipContent>
                               )}
@@ -325,10 +346,15 @@ const Contagion = () => {
                   <TableRow>
                     <TableHead>Source</TableHead>
                     <TableHead>Target</TableHead>
+                    <TableHead>Channel</TableHead>
+                    <TableHead>Process</TableHead>
                     <TableHead className="text-right">Strength</TableHead>
+                    <TableHead className="text-right">Weight</TableHead>
+                    <TableHead className="text-right">Inherent</TableHead>
+                    <TableHead className="text-right">Residual</TableHead>
+                    <TableHead className="text-right">Effective</TableHead>
                     <TableHead className="text-right">Lag</TableHead>
                     <TableHead>Method</TableHead>
-                    <TableHead className="min-w-[240px]">Rationale</TableHead>
                     <TableHead className="w-20" />
                   </TableRow>
                 </TableHeader>
@@ -337,10 +363,15 @@ const Contagion = () => {
                     <TableRow key={l.id}>
                       <TableCell className="font-medium">{nameById.get(l.source_risk_type_id)}</TableCell>
                       <TableCell className="font-medium">{nameById.get(l.target_risk_type_id)}</TableCell>
+                      <TableCell><Badge variant="outline" className="text-[10px]">{channelLabel(l.transmission_channel ?? "operational")}</Badge></TableCell>
+                      <TableCell className="text-xs text-muted-foreground max-w-[180px] truncate">{l.process ?? "—"}</TableCell>
                       <TableCell className="text-right">{Number(l.strength).toFixed(2)}</TableCell>
+                      <TableCell className="text-right">{Number(l.weight ?? 1).toFixed(2)}</TableCell>
+                      <TableCell className="text-right">{Number(l.inherent_score ?? 0).toFixed(0)}</TableCell>
+                      <TableCell className="text-right">{Number(l.residual_score ?? 0).toFixed(0)}</TableCell>
+                      <TableCell className="text-right font-semibold">{effectiveStrength(l).toFixed(2)}</TableCell>
                       <TableCell className="text-right">{l.lag_days}d</TableCell>
                       <TableCell><Badge variant="outline" className="text-[10px]">{l.method}</Badge></TableCell>
-                      <TableCell className="text-xs text-muted-foreground">{l.rationale}</TableCell>
                       <TableCell>
                         <div className="flex gap-1">
                           <Button size="icon" variant="ghost" className="h-7 w-7" onClick={() => openEdit(l)}>
@@ -410,6 +441,53 @@ const Contagion = () => {
                 </Select>
               </div>
             </div>
+            <div className="grid grid-cols-2 gap-3">
+              <div className="grid gap-2">
+                <Label>Transmission channel</Label>
+                <Select value={form.transmission_channel} onValueChange={(v) => setForm({ ...form, transmission_channel: v })}>
+                  <SelectTrigger><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    {TRANSMISSION_CHANNELS.map((c) => (
+                      <SelectItem key={c} value={c}>{channelLabel(c)}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="grid gap-2">
+                <Label>Process</Label>
+                <Input
+                  placeholder="e.g. Credit origination"
+                  value={form.process}
+                  onChange={(e) => setForm({ ...form, process: e.target.value })}
+                />
+              </div>
+            </div>
+            <div className="grid grid-cols-3 gap-3">
+              <div className="grid gap-2">
+                <Label>Inherent score</Label>
+                <Input type="number" min={0} max={100} value={form.inherent_score}
+                  onChange={(e) => setForm({ ...form, inherent_score: Number(e.target.value) })} />
+              </div>
+              <div className="grid gap-2">
+                <Label>Residual score</Label>
+                <Input type="number" min={0} max={100} value={form.residual_score}
+                  onChange={(e) => setForm({ ...form, residual_score: Number(e.target.value) })} />
+              </div>
+              <div className="grid gap-2">
+                <Label>Weight</Label>
+                <Input type="number" step="0.05" min={0} max={2} value={form.weight}
+                  onChange={(e) => setForm({ ...form, weight: Number(e.target.value) })} />
+              </div>
+            </div>
+            <p className="text-xs text-muted-foreground">
+              Effective transmission used by the shock waves:{" "}
+              <span className="font-semibold text-foreground">
+                {effectiveStrength({
+                  strength: form.strength, weight: form.weight,
+                  inherent_score: form.inherent_score, residual_score: form.residual_score,
+                } as ContagionLink).toFixed(2)}
+              </span>
+            </p>
             <div className="grid gap-2">
               <Label>Rationale</Label>
               <Textarea rows={2} value={form.rationale} onChange={(e) => setForm({ ...form, rationale: e.target.value })} />
