@@ -330,6 +330,19 @@ export const useDeleteContagionLink = () => {
 /* Contagion propagation model                                         */
 /* ------------------------------------------------------------------ */
 
+/**
+ * Transmission power of a link: raw strength scaled by its weight and by the
+ * control effectiveness implied by residual vs inherent score.
+ */
+export const effectiveStrength = (l: ContagionLink) => {
+  const strength = Number(l.strength ?? 0);
+  const weight = Number(l.weight ?? 1);
+  const inherent = Number(l.inherent_score ?? 0);
+  const residual = Number(l.residual_score ?? 0);
+  const control = inherent > 0 ? Math.min(1.25, Math.max(0.1, residual / inherent)) : 1;
+  return Math.max(0, Math.min(1.5, strength * weight * control));
+};
+
 export interface PropagationResult {
   byRisk: Record<string, { base: number; propagated: number; total: number; wave: number }>;
   waves: { wave: number; nodes: { id: string; delta: number }[] }[];
@@ -376,7 +389,7 @@ export const propagateShock = (
     frontier.forEach((amount, sourceId) => {
       (outgoing.get(sourceId) ?? []).forEach((link) => {
         const sign = link.direction === "negative" ? -1 : 1;
-        const delta = amount * Number(link.strength) * damping * sign;
+        const delta = amount * effectiveStrength(link) * damping * sign;
         if (Math.abs(delta) < minTransmission) return;
         next.set(link.target_risk_type_id, (next.get(link.target_risk_type_id) ?? 0) + delta);
       });
@@ -410,10 +423,11 @@ export const networkStats = (links: ContagionLink[]) => {
   links.forEach((l) => {
     const s = touch(l.source_risk_type_id);
     const t = touch(l.target_risk_type_id);
+    const eff = effectiveStrength(l);
     s.outDegree += 1;
-    s.outStrength += Number(l.strength);
+    s.outStrength += eff;
     t.inDegree += 1;
-    t.inStrength += Number(l.strength);
+    t.inStrength += eff;
   });
   return stats;
 };
