@@ -9,7 +9,7 @@ import { Progress } from "@/components/ui/progress";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { usePrincipalRiskTypes, useRiskSubTypes, useObservations, useRiskAppetite } from "@/hooks/useRiskUniverse";
 import { useKRIs } from "@/hooks/useKRI";
-import { useDataSources } from "@/hooks/useRiskData";
+import { useDataSources, useRunIngestion, useSyncLog } from "@/hooks/useRiskData";
 
 const ragClass = (rag: string) =>
   rag === "red"
@@ -27,12 +27,28 @@ const RiskDataMaster = () => {
   const { data: appetite } = useRiskAppetite();
   const { data: observations } = useObservations();
   const { data: sources } = useDataSources();
+  const { data: syncLog } = useSyncLog();
+  const ingest = useRunIngestion();
 
   const obsByKri = useMemo(() => {
     const m = new Map<string, number>();
     (observations ?? []).forEach((o) => m.set(o.kri_id, (m.get(o.kri_id) ?? 0) + 1));
     return m;
   }, [observations]);
+
+  const lastObsByKri = useMemo(() => {
+    const m = new Map<string, string>();
+    (observations ?? []).forEach((o) => {
+      const prev = m.get(o.kri_id);
+      if (!prev || o.observed_at > prev) m.set(o.kri_id, o.observed_at);
+    });
+    return m;
+  }, [observations]);
+
+  const automatedObs = useMemo(
+    () => (observations ?? []).filter((o) => o.source && o.source !== "manual").length,
+    [observations]
+  );
 
   const stages = [
     { key: "prt", label: "Principal Risk Types", icon: Layers, count: (prts ?? []).length },
