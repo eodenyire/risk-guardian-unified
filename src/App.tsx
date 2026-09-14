@@ -47,6 +47,9 @@ const App = () => (
               <Route path="/heat-map" element={<HeatMap />} />
               <Route path="/integrations" element={<Integrations />} />
               <Route path="/data-sources" element={<DataSources />} />
+              <Route path="/risk-data-master" element={<RiskDataMaster />} />
+              <Route path="/irrbb" element={<IRRBB />} />
+              <Route path="/prt/:code" element={<PrtModule />} />
               <Route path="/settings" element={<Settings />} />
             </Route>
             <Route path="*" element={<NotFound />} />
