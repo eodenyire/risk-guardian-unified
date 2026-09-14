@@ -441,6 +441,53 @@ const Contagion = () => {
                 </Select>
               </div>
             </div>
+            <div className="grid grid-cols-2 gap-3">
+              <div className="grid gap-2">
+                <Label>Transmission channel</Label>
+                <Select value={form.transmission_channel} onValueChange={(v) => setForm({ ...form, transmission_channel: v })}>
+                  <SelectTrigger><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    {TRANSMISSION_CHANNELS.map((c) => (
+                      <SelectItem key={c} value={c}>{channelLabel(c)}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="grid gap-2">
+                <Label>Process</Label>
+                <Input
+                  placeholder="e.g. Credit origination"
+                  value={form.process}
+                  onChange={(e) => setForm({ ...form, process: e.target.value })}
+                />
+              </div>
+            </div>
+            <div className="grid grid-cols-3 gap-3">
+              <div className="grid gap-2">
+                <Label>Inherent score</Label>
+                <Input type="number" min={0} max={100} value={form.inherent_score}
+                  onChange={(e) => setForm({ ...form, inherent_score: Number(e.target.value) })} />
+              </div>
+              <div className="grid gap-2">
+                <Label>Residual score</Label>
+                <Input type="number" min={0} max={100} value={form.residual_score}
+                  onChange={(e) => setForm({ ...form, residual_score: Number(e.target.value) })} />
+              </div>
+              <div className="grid gap-2">
+                <Label>Weight</Label>
+                <Input type="number" step="0.05" min={0} max={2} value={form.weight}
+                  onChange={(e) => setForm({ ...form, weight: Number(e.target.value) })} />
+              </div>
+            </div>
+            <p className="text-xs text-muted-foreground">
+              Effective transmission used by the shock waves:{" "}
+              <span className="font-semibold text-foreground">
+                {effectiveStrength({
+                  strength: form.strength, weight: form.weight,
+                  inherent_score: form.inherent_score, residual_score: form.residual_score,
+                } as ContagionLink).toFixed(2)}
+              </span>
+            </p>
             <div className="grid gap-2">
               <Label>Rationale</Label>
               <Textarea rows={2} value={form.rationale} onChange={(e) => setForm({ ...form, rationale: e.target.value })} />
