@@ -16,7 +16,8 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import {
   usePrincipalRiskTypes, useContagionLinks, useUpsertContagionLink, useDeleteContagionLink,
-  propagateShock, networkStats, ContagionLink,
+  propagateShock, networkStats, ContagionLink, effectiveStrength,
+  TRANSMISSION_CHANNELS, channelLabel,
 } from "@/hooks/useRiskUniverse";
 import { useKRIs } from "@/hooks/useKRI";
 
@@ -107,6 +108,11 @@ const Contagion = () => {
       id: l.id, source_risk_type_id: l.source_risk_type_id, target_risk_type_id: l.target_risk_type_id,
       strength: Number(l.strength), lag_days: l.lag_days, direction: l.direction,
       method: l.method, rationale: l.rationale ?? "",
+      transmission_channel: l.transmission_channel ?? "operational",
+      process: l.process ?? "",
+      inherent_score: Number(l.inherent_score ?? 50),
+      residual_score: Number(l.residual_score ?? 30),
+      weight: Number(l.weight ?? 1),
     });
     setOpen(true);
   };
