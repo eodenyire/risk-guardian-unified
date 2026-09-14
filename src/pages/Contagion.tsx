@@ -346,10 +346,15 @@ const Contagion = () => {
                   <TableRow>
                     <TableHead>Source</TableHead>
                     <TableHead>Target</TableHead>
+                    <TableHead>Channel</TableHead>
+                    <TableHead>Process</TableHead>
                     <TableHead className="text-right">Strength</TableHead>
+                    <TableHead className="text-right">Weight</TableHead>
+                    <TableHead className="text-right">Inherent</TableHead>
+                    <TableHead className="text-right">Residual</TableHead>
+                    <TableHead className="text-right">Effective</TableHead>
                     <TableHead className="text-right">Lag</TableHead>
                     <TableHead>Method</TableHead>
-                    <TableHead className="min-w-[240px]">Rationale</TableHead>
                     <TableHead className="w-20" />
                   </TableRow>
                 </TableHeader>
@@ -358,10 +363,15 @@ const Contagion = () => {
                     <TableRow key={l.id}>
                       <TableCell className="font-medium">{nameById.get(l.source_risk_type_id)}</TableCell>
                       <TableCell className="font-medium">{nameById.get(l.target_risk_type_id)}</TableCell>
+                      <TableCell><Badge variant="outline" className="text-[10px]">{channelLabel(l.transmission_channel ?? "operational")}</Badge></TableCell>
+                      <TableCell className="text-xs text-muted-foreground max-w-[180px] truncate">{l.process ?? "—"}</TableCell>
                       <TableCell className="text-right">{Number(l.strength).toFixed(2)}</TableCell>
+                      <TableCell className="text-right">{Number(l.weight ?? 1).toFixed(2)}</TableCell>
+                      <TableCell className="text-right">{Number(l.inherent_score ?? 0).toFixed(0)}</TableCell>
+                      <TableCell className="text-right">{Number(l.residual_score ?? 0).toFixed(0)}</TableCell>
+                      <TableCell className="text-right font-semibold">{effectiveStrength(l).toFixed(2)}</TableCell>
                       <TableCell className="text-right">{l.lag_days}d</TableCell>
                       <TableCell><Badge variant="outline" className="text-[10px]">{l.method}</Badge></TableCell>
-                      <TableCell className="text-xs text-muted-foreground">{l.rationale}</TableCell>
                       <TableCell>
                         <div className="flex gap-1">
                           <Button size="icon" variant="ghost" className="h-7 w-7" onClick={() => openEdit(l)}>
