@@ -273,7 +273,9 @@ const Contagion = () => {
           <Card className="shadow-card">
             <CardHeader>
               <CardTitle className="text-lg">Transmission Matrix</CardTitle>
-              <p className="text-sm text-muted-foreground">Rows transmit to columns. Cell shade = link strength.</p>
+              <p className="text-sm text-muted-foreground">
+                Rows transmit to columns. Cell shade = effective transmission (strength x weight x residual/inherent control factor).
+              </p>
             </CardHeader>
             <CardContent className="overflow-auto">
               {isLoading ? <Skeleton className="h-96 w-full" /> : (
@@ -312,7 +314,13 @@ const Contagion = () => {
                               {l && (
                                 <TooltipContent className="max-w-xs">
                                   <p className="font-medium">{r.name} <ArrowRight className="inline h-3 w-3" /> {c.name}</p>
-                                  <p className="text-xs mt-1">Strength {v.toFixed(2)} · lag {l.lag_days}d</p>
+                                  <p className="text-xs mt-1">
+                                    Effective {v.toFixed(2)} · raw {Number(l.strength).toFixed(2)} · weight {Number(l.weight ?? 1).toFixed(2)} · lag {l.lag_days}d
+                                  </p>
+                                  <p className="text-xs">
+                                    {channelLabel(l.transmission_channel ?? "operational")}
+                                    {l.process ? ` · ${l.process}` : ""} · inherent {Number(l.inherent_score ?? 0).toFixed(0)} → residual {Number(l.residual_score ?? 0).toFixed(0)}
+                                  </p>
                                   {l.rationale && <p className="text-xs mt-1 text-muted-foreground">{l.rationale}</p>}
                                 </TooltipContent>
                               )}
