@@ -497,6 +497,65 @@ export type Database = {
           },
         ]
       }
+      prt_gap_entries: {
+        Row: {
+          as_of_date: string
+          bucket: string
+          bucket_order: number
+          created_at: string
+          currency: string
+          dimension: string
+          exposure: number
+          id: string
+          limit_value: number | null
+          notes: string | null
+          offset_amount: number
+          risk_type_id: string
+          source: string
+          updated_at: string
+        }
+        Insert: {
+          as_of_date?: string
+          bucket: string
+          bucket_order?: number
+          created_at?: string
+          currency?: string
+          dimension?: string
+          exposure?: number
+          id?: string
+          limit_value?: number | null
+          notes?: string | null
+          offset_amount?: number
+          risk_type_id: string
+          source?: string
+          updated_at?: string
+        }
+        Update: {
+          as_of_date?: string
+          bucket?: string
+          bucket_order?: number
+          created_at?: string
+          currency?: string
+          dimension?: string
+          exposure?: number
+          id?: string
+          limit_value?: number | null
+          notes?: string | null
+          offset_amount?: number
+          risk_type_id?: string
+          source?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "prt_gap_entries_risk_type_id_fkey"
+            columns: ["risk_type_id"]
+            isOneToOne: false
+            referencedRelation: "risk_types"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       rcsa_assessments: {
         Row: {
           approved_at: string | null
