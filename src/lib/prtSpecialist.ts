@@ -95,6 +95,48 @@ export const SPECIALIST: Record<string, SpecialistConfig> = {
     unit: "KES m",
     signedNet: false,
   },
+  CTY: {
+    title: "Cross-Border Exposure by Country",
+    blurb: "Gross cross-border exposure against risk mitigants (guarantees, insurance) and board country limits.",
+    dimension: "country", bucketLabel: "Country", exposureLabel: "Gross exposure", offsetLabel: "Mitigants",
+    netLabel: "Net exposure", limitLabel: "Country limit", unit: "KES m", signedNet: false,
+  },
+  STR: {
+    title: "Strategic Plan Delivery by Business Line",
+    blurb: "Budgeted revenue against actuals year to date, with shortfall tolerance per business line.",
+    dimension: "band", bucketLabel: "Business line", exposureLabel: "Budget", offsetLabel: "Actual",
+    netLabel: "Shortfall", limitLabel: "Tolerance", unit: "KES m", signedNet: true,
+  },
+  CYB: {
+    title: "Vulnerability Remediation Ladder",
+    blurb: "Open vulnerabilities by severity against those remediated, versus the open-count tolerance.",
+    dimension: "band", bucketLabel: "Severity", exposureLabel: "Identified", offsetLabel: "Remediated",
+    netLabel: "Open", limitLabel: "Max open", unit: "count", signedNet: false,
+  },
+  FRD: {
+    title: "Fraud Losses by Channel",
+    blurb: "Attempted/actual fraud losses by channel against recoveries and the loss appetite.",
+    dimension: "band", bucketLabel: "Channel", exposureLabel: "Gross loss", offsetLabel: "Recovered",
+    netLabel: "Net loss", limitLabel: "Loss appetite", unit: "KES m", signedNet: false,
+  },
+  CMP: {
+    title: "Regulatory Findings by Regulator",
+    blurb: "Findings raised against findings closed, versus the open-findings tolerance per regulator.",
+    dimension: "band", bucketLabel: "Regulator", exposureLabel: "Findings raised", offsetLabel: "Closed",
+    netLabel: "Open", limitLabel: "Max open", unit: "count", signedNet: false,
+  },
+  CND: {
+    title: "Customer Complaints by Theme",
+    blurb: "Complaints received against complaints resolved within SLA, versus the backlog tolerance.",
+    dimension: "band", bucketLabel: "Theme", exposureLabel: "Received", offsetLabel: "Resolved",
+    netLabel: "Backlog", limitLabel: "Max backlog", unit: "count", signedNet: false,
+  },
+  MDL: {
+    title: "Model Inventory Validation Status",
+    blurb: "Models in use by tier against those with current independent validation.",
+    dimension: "band", bucketLabel: "Model tier", exposureLabel: "Models in use", offsetLabel: "Validated",
+    netLabel: "Unvalidated", limitLabel: "Max unvalidated", unit: "count", signedNet: false,
+  },
 };
 
 export const specialistFor = (code?: string | null): SpecialistConfig =>
