@@ -22,6 +22,7 @@ import DataSources from "./pages/DataSources";
 import IRRBB from "./pages/IRRBB";
 import PrtModule from "./pages/PrtModule";
 import RiskDataMaster from "./pages/RiskDataMaster";
+import AppetiteHeatMap from "./pages/AppetiteHeatMap";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -40,6 +41,7 @@ const App = () => (
               <Route path="/risk-universe" element={<RiskUniverse />} />
               <Route path="/risk-register" element={<RiskRegister />} />
               <Route path="/appetite" element={<RiskAppetite />} />
+              <Route path="/appetite-heat-map" element={<AppetiteHeatMap />} />
               <Route path="/contagion" element={<Contagion />} />
               <Route path="/kri" element={<KRI />} />
               <Route path="/controls" element={<Controls />} />

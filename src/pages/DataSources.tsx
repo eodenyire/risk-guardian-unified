@@ -16,6 +16,9 @@ import {
   useTestConnection, useTriggerSync, DataSourceRow,
 } from "@/hooks/useGRC";
 import { formatDistanceToNow } from "date-fns";
+import ObservationImportDialog from "@/components/ObservationImportDialog";
+import { useRunIngestion } from "@/hooks/useRiskData";
+import { Upload, Play } from "lucide-react";
 
 const sourceTypes = [
   { value: "smartsheets", label: "SmartSheets" },
@@ -51,6 +54,8 @@ const DataSourcesPage = () => {
   const test = useTestConnection();
   const sync = useTriggerSync();
 
+  const ingest = useRunIngestion();
+  const [importOpen, setImportOpen] = useState(false);
   const [search, setSearch] = useState("");
   const [fType, setFType] = useState("all");
   const [open, setOpen] = useState(false);
@@ -97,7 +102,11 @@ const DataSourcesPage = () => {
             <p className="text-muted-foreground">Register file shares, SharePoint, OneDrive and internal systems feeding the platform</p>
           </div>
         </div>
-        <Button onClick={openCreate}><Plus className="h-4 w-4 mr-2" /> Add Source</Button>
+        <div className="flex gap-2">
+          <Button variant="outline" onClick={() => setImportOpen(true)}><Upload className="h-4 w-4 mr-2" /> Import Excel/CSV</Button>
+          <Button variant="outline" onClick={() => ingest.mutate(undefined)} disabled={ingest.isPending}><Play className="h-4 w-4 mr-2" /> Run ingestion</Button>
+          <Button onClick={openCreate}><Plus className="h-4 w-4 mr-2" /> Add Source</Button>
+        </div>
       </div>
 
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
@@ -183,6 +192,7 @@ const DataSourcesPage = () => {
         </CardContent>
       </Card>
 
+      <ObservationImportDialog open={importOpen} onOpenChange={setImportOpen} />
       <Dialog open={open} onOpenChange={setOpen}>
         <DialogContent className="max-w-xl">
           <DialogHeader><DialogTitle>{form.id ? "Edit Data Source" : "Add Data Source"}</DialogTitle></DialogHeader>

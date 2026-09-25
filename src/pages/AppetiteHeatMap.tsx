@@ -1,4 +1,4 @@
-import { useMemo } from "react";
+import { Fragment, useMemo } from "react";
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import { Target } from "lucide-react";
@@ -62,8 +62,8 @@ const AppetiteHeatMap = () => {
             <div />
             {UTILISATION_BANDS.map((b) => <div key={b.label} className="text-xs text-center text-muted-foreground py-1">{b.label}</div>)}
             {levels.map((lvl) => (
-              <>
-                <div key={lvl} className="text-xs capitalize flex items-center font-medium">{lvl || "unset"}</div>
+              <Fragment key={lvl}>
+                <div className="text-xs capitalize flex items-center font-medium">{lvl || "unset"}</div>
                 {UTILISATION_BANDS.map((_, bi) => {
                   const hits = rows.filter((r) => (r.a.appetite_level ?? "").toLowerCase() === lvl && r.s.band === bi);
                   return (
@@ -81,7 +81,7 @@ const AppetiteHeatMap = () => {
                     </Tooltip>
                   );
                 })}
-              </>
+              </Fragment>
             ))}
           </div>
           {rows.some((r) => r.s.band === -1) && (

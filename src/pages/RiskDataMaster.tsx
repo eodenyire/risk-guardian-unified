@@ -74,9 +74,11 @@ const RiskDataMaster = () => {
         : "grey";
       const completeness =
         ((subs.length ? 1 : 0) + (ks.length ? 1 : 0) + (app ? 1 : 0) + (obs ? 1 : 0)) * 25;
-      return { p, subs: subs.length, kris: ks.length, obs, app, rollup, completeness };
+      const last = ks.map((k) => lastObsByKri.get(k.id)).filter(Boolean).sort().pop() ?? null;
+      const auto = (observations ?? []).filter((o) => ks.some((k) => k.id === o.kri_id) && o.source && o.source !== "manual" && o.source !== "seed").length;
+      return { p, subs: subs.length, kris: ks.length, obs, app, rollup, completeness, last, auto };
     });
-  }, [prts, subTypes, kris, appetite, obsByKri]);
+  }, [prts, subTypes, kris, appetite, obsByKri, lastObsByKri, observations]);
 
   const avgCompleteness = coverage.length
     ? Math.round(coverage.reduce((a, c) => a + c.completeness, 0) / coverage.length)
@@ -93,7 +95,12 @@ const RiskDataMaster = () => {
             Orchestration, aggregation and coverage of every stage of the risk data pipeline.
           </p>
         </div>
-        <Button asChild variant="outline"><Link to="/data-sources"><RefreshCw className="h-4 w-4 mr-2" />Manage sources</Link></Button>
+        <div className="flex gap-2">
+          <Button onClick={() => ingest.mutate(undefined)} disabled={ingest.isPending}>
+            <RefreshCw className={`h-4 w-4 mr-2 ${ingest.isPending ? "animate-spin" : ""}`} />{ingest.isPending ? "Ingesting…" : "Run ingestion"}
+          </Button>
+          <Button asChild variant="outline"><Link to="/data-sources">Manage sources</Link></Button>
+        </div>
       </div>
 
       <Card className="shadow-card">
@@ -133,6 +140,8 @@ const RiskDataMaster = () => {
                 <TableHead className="text-right">KRIs</TableHead>
                 <TableHead className="text-right">Appetite</TableHead>
                 <TableHead className="text-right">Observations</TableHead>
+                <TableHead className="text-right">Automated</TableHead>
+                <TableHead>Last reading</TableHead>
                 <TableHead>Aggregated RAG</TableHead>
                 <TableHead className="w-40">Completeness</TableHead>
                 <TableHead className="w-24" />
@@ -149,6 +158,8 @@ const RiskDataMaster = () => {
                   <TableCell className="text-right tabular-nums">{c.kris}</TableCell>
                   <TableCell className="text-right tabular-nums">{c.app}</TableCell>
                   <TableCell className="text-right tabular-nums">{c.obs}</TableCell>
+                  <TableCell className="text-right tabular-nums">{c.auto}</TableCell>
+                  <TableCell className="text-xs text-muted-foreground">{c.last ? new Date(c.last).toLocaleDateString() : "—"}</TableCell>
                   <TableCell><Badge variant="outline" className={ragClass(c.rollup)}>{c.rollup.toUpperCase()}</Badge></TableCell>
                   <TableCell>
                     <div className="flex items-center gap-2">
@@ -169,6 +180,8 @@ const RiskDataMaster = () => {
           </Table>
         </CardContent>
       </Card>
+
+      <p className="text-xs text-muted-foreground">{automatedObs} observations have come from automated feeds or file imports. Last ingestion run: {syncLog?.[0]?.started_at ? new Date(syncLog[0].started_at).toLocaleString() : "never"}.</p>
 
       <Card className="shadow-card">
         <CardHeader><CardTitle className="text-lg">Connected Data Sources</CardTitle></CardHeader>

@@ -3,7 +3,7 @@ import { motion } from "framer-motion";
 import {
   LayoutDashboard, ShieldAlert, BarChart3, Settings2,
   FileCheck, Thermometer, Link2, Database, ChevronLeft, ChevronRight,
-  Network, Target, Share2, ChevronDown, Percent, Boxes
+  Network, Target, Share2, ChevronDown, Percent, Boxes, Grid3x3
 } from "lucide-react";
 import { useState } from "react";
 import wekezaLogo from "@/assets/wekeza_logo.png";
@@ -16,6 +16,7 @@ const navItems = [
   { path: "/risk-register", label: "Risk Register", icon: ShieldAlert },
   { path: "/kri", label: "KRI Monitor", icon: BarChart3 },
   { path: "/appetite", label: "Risk Appetite", icon: Target },
+  { path: "/appetite-heat-map", label: "Appetite vs Risk", icon: Grid3x3 },
   { path: "/controls", label: "Controls", icon: Settings2 },
   { path: "/rcsa", label: "RCSA", icon: FileCheck },
   { path: "/heat-map", label: "Heat Map", icon: Thermometer },
