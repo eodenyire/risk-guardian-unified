@@ -17,6 +17,8 @@ import {
   type Rag,
 } from "@/hooks/useRiskUniverse";
 import { useKRIs } from "@/hooks/useKRI";
+import { PrtOverview, PrtSpecialistTable } from "@/components/PrtDashboard";
+import { specialistFor } from "@/lib/prtSpecialist";
 
 const ragClass = (rag: string) =>
   rag === "red"
@@ -116,13 +118,24 @@ const PrtModule = () => {
         ))}
       </div>
 
-      <Tabs defaultValue="subtypes">
-        <TabsList>
+      <Tabs defaultValue="overview">
+        <TabsList className="flex-wrap h-auto">
+          <TabsTrigger value="overview">Dashboard</TabsTrigger>
+          <TabsTrigger value="specialist">{specialistFor(prt.code).title}</TabsTrigger>
           <TabsTrigger value="subtypes">Sub Risk Types</TabsTrigger>
           <TabsTrigger value="kris">KRIs & Thresholds</TabsTrigger>
           <TabsTrigger value="appetite">Risk Appetite</TabsTrigger>
           <TabsTrigger value="links">Interconnections</TabsTrigger>
         </TabsList>
+
+        <TabsContent value="overview" className="mt-4">
+          <PrtOverview prt={prt} kris={myKris} allKris={kris ?? []} appetite={myAppetite} links={links ?? []} />
+        </TabsContent>
+
+        <TabsContent value="specialist" className="mt-4">
+          <PrtSpecialistTable prt={prt} />
+        </TabsContent>
+
 
         <TabsContent value="subtypes" className="mt-4">
           <Card className="shadow-card">
