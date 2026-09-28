@@ -73,6 +73,35 @@ export type Database = {
           },
         ]
       }
+      data_source_credentials: {
+        Row: {
+          auth_type: string
+          data_source_id: string
+          secret: Json
+          updated_at: string
+        }
+        Insert: {
+          auth_type?: string
+          data_source_id: string
+          secret?: Json
+          updated_at?: string
+        }
+        Update: {
+          auth_type?: string
+          data_source_id?: string
+          secret?: Json
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "data_source_credentials_data_source_id_fkey"
+            columns: ["data_source_id"]
+            isOneToOne: true
+            referencedRelation: "data_sources"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       data_sources: {
         Row: {
           connection_config: Json
@@ -767,6 +796,30 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      risk_insight_runs: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          id: string
+          input: Json
+          result: Json
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          input?: Json
+          result?: Json
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          input?: Json
+          result?: Json
+        }
+        Relationships: []
       }
       risk_register: {
         Row: {
