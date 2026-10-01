@@ -2,7 +2,9 @@ import { useMemo, useRef, useState } from "react";
 import * as XLSX from "xlsx";
 import { useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { FileSpreadsheet, Upload, CheckCircle2, AlertTriangle } from "lucide-react";
+import { FileSpreadsheet, Upload, CheckCircle2, AlertTriangle, Trash2 } from "lucide-react";
+import { Input } from "@/components/ui/input";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
@@ -71,6 +73,23 @@ const ObservationImportDialog = ({ open, onOpenChange, sourceName = "File import
     return { byName, byId };
   }, [kris]);
 
+  const [missingCols, setMissingCols] = useState<string[]>([]);
+
+  const validate = (r: ParsedRow): ParsedRow => {
+    let error: string | null = null;
+    if (!r.kriName && !r.kriId) error = "Missing indicator";
+    else if (!r.kriId) error = `Unmapped indicator "${r.kriName}"`;
+    else if (r.value === null || !Number.isFinite(r.value)) error = "Missing or invalid value";
+    else if (Number.isNaN(new Date(r.observedAt).getTime())) error = "Invalid date";
+    else if (new Date(r.observedAt).getTime() > Date.now() + 86400000) error = "Date is in the future";
+    return { ...r, error };
+  };
+  const updateRow = (i: number, patch: Partial<ParsedRow>) =>
+    setRows((rs) => rs.map((r, j) => (j === i ? validate({ ...r, ...patch }) : r)));
+  const mapAll = (name: string, kriId: string) =>
+    setRows((rs) => rs.map((r) => (!r.kriId && norm(r.kriName) === norm(name) ? validate({ ...r, kriId }) : r)));
+  const unmappedNames = useMemo(() => [...new Set(rows.filter((r) => !r.kriId && r.kriName).map((r) => r.kriName))], [rows]);
+
   const parse = async (file: File) => {
     setFileName(file.name);
     const buf = await file.arrayBuffer();
@@ -78,6 +97,12 @@ const ObservationImportDialog = ({ open, onOpenChange, sourceName = "File import
     const sheet = wb.Sheets[wb.SheetNames[0]];
     const json = XLSX.utils.sheet_to_json<Record<string, unknown>>(sheet, { defval: "" });
 
+    const first = json[0] ?? {};
+    const miss: string[] = [];
+    if (!findKey(first, ["kri", "kri_name", "kriname", "indicator", "kri_id", "kriid", "metric"])) miss.push("KRI / Indicator");
+    if (!findKey(first, ["value", "observation", "actual", "reading", "amount"])) miss.push("Value");
+    if (!findKey(first, ["observed_at", "observedat", "date", "as_of_date", "asofdate", "period"])) miss.push("Date (today will be used)");
+    setMissingCols(miss);
     const parsed: ParsedRow[] = json.map((raw) => {
       const kriKey = findKey(raw, ["kri", "kri_name", "kriname", "indicator", "kri_id", "kriid", "metric"]);
       const valueKey = findKey(raw, ["value", "observation", "actual", "reading", "amount"]);
@@ -86,22 +111,18 @@ const ObservationImportDialog = ({ open, onOpenChange, sourceName = "File import
 
       const rawKri = kriKey ? String(raw[kriKey] ?? "").trim() : "";
       const kriId = lookup.byId.has(rawKri) ? rawKri : lookup.byName.get(norm(rawKri)) ?? null;
-      const value = valueKey !== null ? Number(String(raw[valueKey]).replace(/[, %]/g, "")) : NaN;
+      const rawVal = valueKey !== null ? String(raw[valueKey] ?? "").replace(/[, %]/g, "") : "";
+      const value = rawVal === "" ? NaN : Number(rawVal);
 
-      let error: string | null = null;
-      if (!rawKri) error = "No indicator column found";
-      else if (!kriId) error = `Unknown indicator "${rawKri}"`;
-      else if (!Number.isFinite(value)) error = "Value is not a number";
-
-      return {
+      return validate({
         raw,
         kriId,
         kriName: rawKri,
         value: Number.isFinite(value) ? value : null,
         observedAt: toIso(dateKey ? raw[dateKey] : null),
         notes: notesKey ? String(raw[notesKey] ?? "") || null : null,
-        error,
-      };
+        error: null,
+      });
     });
 
     setRows(parsed);
@@ -156,6 +177,7 @@ const ObservationImportDialog = ({ open, onOpenChange, sourceName = "File import
       );
       toast.success(`Imported ${valid.length} observation(s) — RAG recalculated`);
       setRows([]);
+      setMissingCols([]);
       setFileName("");
       onOpenChange(false);
     } catch (e) {
@@ -167,7 +189,7 @@ const ObservationImportDialog = ({ open, onOpenChange, sourceName = "File import
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-3xl">
+      <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2"><FileSpreadsheet className="h-5 w-5" /> Import observations</DialogTitle>
           <DialogDescription>
@@ -202,28 +224,61 @@ const ObservationImportDialog = ({ open, onOpenChange, sourceName = "File import
               </Badge>
               {rows.length - valid.length > 0 && (
                 <Badge variant="outline" className="bg-risk-red/15 text-risk-red border-risk-red/30">
-                  <AlertTriangle className="h-3 w-3 mr-1" /> {rows.length - valid.length} skipped
+                  <AlertTriangle className="h-3 w-3 mr-1" /> {rows.length - valid.length} need fixing (will be skipped)
                 </Badge>
               )}
             </div>
-            <div className="max-h-64 overflow-auto rounded-lg border">
+            {missingCols.length > 0 && (
+              <div className="rounded-lg border border-risk-amber/40 bg-risk-amber/10 p-3 text-sm">
+                <strong>Missing columns:</strong> {missingCols.join(", ")}
+              </div>
+            )}
+            {unmappedNames.length > 0 && (
+              <div className="rounded-lg border p-3 space-y-2">
+                <p className="text-sm font-medium">Map unknown indicators</p>
+                {unmappedNames.map((n) => (
+                  <div key={n} className="flex items-center gap-3 text-sm">
+                    <span className="w-1/2 truncate">"{n}"</span>
+                    <Select onValueChange={(v) => mapAll(n, v)}>
+                      <SelectTrigger className="h-8"><SelectValue placeholder="Map to indicator…" /></SelectTrigger>
+                      <SelectContent>{(kris ?? []).map((k) => <SelectItem key={k.id} value={k.id}>{k.name}</SelectItem>)}</SelectContent>
+                    </Select>
+                  </div>
+                ))}
+              </div>
+            )}
+            <div className="max-h-72 overflow-auto rounded-lg border">
               <Table>
                 <TableHeader>
                   <TableRow>
                     <TableHead>Indicator</TableHead>
-                    <TableHead className="text-right">Value</TableHead>
+                    <TableHead>Value</TableHead>
                     <TableHead>Date</TableHead>
                     <TableHead>Status</TableHead>
+                    <TableHead />
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {rows.slice(0, 100).map((r, i) => (
-                    <TableRow key={i}>
-                      <TableCell className="font-medium">{r.kriName || "—"}</TableCell>
-                      <TableCell className="text-right tabular-nums">{r.value ?? "—"}</TableCell>
-                      <TableCell className="text-xs text-muted-foreground">{new Date(r.observedAt).toLocaleDateString()}</TableCell>
+                  {rows.slice(0, 200).map((r, i) => (
+                    <TableRow key={i} className={r.error ? "bg-risk-red/5" : ""}>
+                      <TableCell className="min-w-[180px]">
+                        <Select value={r.kriId ?? ""} onValueChange={(v) => updateRow(i, { kriId: v })}>
+                          <SelectTrigger className="h-8"><SelectValue placeholder={r.kriName || "Choose…"} /></SelectTrigger>
+                          <SelectContent>{(kris ?? []).map((k) => <SelectItem key={k.id} value={k.id}>{k.name}</SelectItem>)}</SelectContent>
+                        </Select>
+                      </TableCell>
+                      <TableCell>
+                        <Input className="h-8 w-24 tabular-nums" value={r.value ?? ""} onChange={(e) => updateRow(i, { value: e.target.value === "" ? null : Number(e.target.value) })} />
+                      </TableCell>
+                      <TableCell>
+                        <Input type="date" className="h-8 w-36" value={Number.isNaN(new Date(r.observedAt).getTime()) ? "" : r.observedAt.slice(0, 10)}
+                          onChange={(e) => updateRow(i, { observedAt: e.target.value ? new Date(e.target.value).toISOString() : "invalid" })} />
+                      </TableCell>
                       <TableCell className="text-xs">
                         {r.error ? <span className="text-risk-red">{r.error}</span> : <span className="text-risk-green">Ready</span>}
+                      </TableCell>
+                      <TableCell>
+                        <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => setRows((rs) => rs.filter((_, j) => j !== i))}><Trash2 className="h-3.5 w-3.5" /></Button>
                       </TableCell>
                     </TableRow>
                   ))}

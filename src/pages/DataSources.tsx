@@ -12,11 +12,13 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
-  useDataSourcesList, useUpsertDataSource, useDeleteDataSource,
-  useTestConnection, useTriggerSync, DataSourceRow,
+  useDataSourcesList, useDeleteDataSource, useTriggerSync, DataSourceRow,
 } from "@/hooks/useGRC";
 import { formatDistanceToNow } from "date-fns";
+import { toast } from "sonner";
 import ObservationImportDialog from "@/components/ObservationImportDialog";
+import SourceWizardDialog from "@/components/SourceWizardDialog";
+import { useVerifySource } from "@/hooks/useSourceOps";
 import { useRunIngestion } from "@/hooks/useRiskData";
 import { Upload, Play } from "lucide-react";
 
@@ -38,20 +40,10 @@ const statusStyles: Record<string, string> = {
   disconnected: "bg-muted text-muted-foreground border",
 };
 
-interface FormState {
-  id?: string; name: string; source_type: string; description: string;
-  location: string; integration_status: string;
-}
-const emptyForm: FormState = {
-  name: "", source_type: "sharepoint", description: "", location: "",
-  integration_status: "disconnected",
-};
-
 const DataSourcesPage = () => {
   const { data: sources, isLoading } = useDataSourcesList();
-  const upsert = useUpsertDataSource();
   const del = useDeleteDataSource();
-  const test = useTestConnection();
+  const verify = useVerifySource();
   const sync = useTriggerSync();
 
   const ingest = useRunIngestion();
@@ -59,7 +51,7 @@ const DataSourcesPage = () => {
   const [search, setSearch] = useState("");
   const [fType, setFType] = useState("all");
   const [open, setOpen] = useState(false);
-  const [form, setForm] = useState<FormState>(emptyForm);
+  const [editId, setEditId] = useState<string | null>(null);
 
   const filtered = useMemo(() => {
     return (sources ?? []).filter(s => {
@@ -69,21 +61,8 @@ const DataSourcesPage = () => {
     });
   }, [sources, fType, search]);
 
-  const openCreate = () => { setForm(emptyForm); setOpen(true); };
-  const openEdit = (s: DataSourceRow) => {
-    setForm({
-      id: s.id, name: s.name, source_type: s.source_type,
-      description: s.description ?? "", location: s.location ?? "",
-      integration_status: s.integration_status,
-    });
-    setOpen(true);
-  };
-
-  const save = async () => {
-    if (!form.name.trim()) return;
-    await upsert.mutateAsync(form as Partial<DataSourceRow>);
-    setOpen(false);
-  };
+  const openCreate = () => { setEditId(null); setOpen(true); };
+  const openEdit = (s: DataSourceRow) => { setEditId(s.id); setOpen(true); };
 
   const stats = {
     total: (sources ?? []).length,
@@ -164,6 +143,7 @@ const DataSourcesPage = () => {
                       <TableCell>
                         <div className="font-medium">{s.name}</div>
                         {s.description && <div className="text-xs text-muted-foreground line-clamp-1">{s.description}</div>}
+                        {s.integration_status === "error" && s.error_message && <div className="text-xs text-destructive line-clamp-2 max-w-[320px]">{s.error_message}</div>}
                       </TableCell>
                       <TableCell className="text-sm capitalize">{s.source_type.replace("_", " ")}</TableCell>
                       <TableCell className="text-xs font-mono text-muted-foreground max-w-[260px] truncate">{s.location ?? "—"}</TableCell>
@@ -171,7 +151,7 @@ const DataSourcesPage = () => {
                       <TableCell className="text-sm">{s.last_sync_at ? formatDistanceToNow(new Date(s.last_sync_at), { addSuffix: true }) : "—"}</TableCell>
                       <TableCell className="font-mono text-sm">{s.records_synced.toLocaleString()}</TableCell>
                       <TableCell className="text-right whitespace-nowrap">
-                        <Button variant="ghost" size="icon" title="Test connection" onClick={() => test.mutate(s.id)}>
+                        <Button variant="ghost" size="icon" title="Test connection" onClick={() => verify.mutate({ data_source_id: s.id }, { onSuccess: (r) => r.ok ? toast.success(`${s.name}: connected`) : toast.error(`${s.name}: ${(r.checks ?? []).filter(c => !c.ok).map(c => c.detail).join("; ") || r.error}`) })}>
                           <PlugZap className="h-4 w-4" />
                         </Button>
                         <Button variant="ghost" size="icon" title="Sync now" onClick={() => sync.mutate(s)} disabled={s.integration_status !== "connected"}>
@@ -193,47 +173,7 @@ const DataSourcesPage = () => {
       </Card>
 
       <ObservationImportDialog open={importOpen} onOpenChange={setImportOpen} />
-      <Dialog open={open} onOpenChange={setOpen}>
-        <DialogContent className="max-w-xl">
-          <DialogHeader><DialogTitle>{form.id ? "Edit Data Source" : "Add Data Source"}</DialogTitle></DialogHeader>
-          <div className="grid grid-cols-2 gap-4">
-            <div className="col-span-2">
-              <Label>Name</Label>
-              <Input value={form.name} onChange={e => setForm({ ...form, name: e.target.value })} />
-            </div>
-            <div>
-              <Label>Type</Label>
-              <Select value={form.source_type} onValueChange={v => setForm({ ...form, source_type: v })}>
-                <SelectTrigger><SelectValue /></SelectTrigger>
-                <SelectContent>
-                  {sourceTypes.map(t => <SelectItem key={t.value} value={t.value}>{t.label}</SelectItem>)}
-                </SelectContent>
-              </Select>
-            </div>
-            <div>
-              <Label>Initial status</Label>
-              <Select value={form.integration_status} onValueChange={v => setForm({ ...form, integration_status: v })}>
-                <SelectTrigger><SelectValue /></SelectTrigger>
-                <SelectContent>
-                  {["disconnected","pending","connected","error"].map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}
-                </SelectContent>
-              </Select>
-            </div>
-            <div className="col-span-2">
-              <Label>Location / URL / path</Label>
-              <Input value={form.location} onChange={e => setForm({ ...form, location: e.target.value })} placeholder="e.g. https://wekeza.sharepoint.com/sites/risk or //fileserver/risk" />
-            </div>
-            <div className="col-span-2">
-              <Label>Description</Label>
-              <Textarea rows={2} value={form.description} onChange={e => setForm({ ...form, description: e.target.value })} />
-            </div>
-          </div>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setOpen(false)}>Cancel</Button>
-            <Button onClick={save} disabled={upsert.isPending}>{form.id ? "Save" : "Create"}</Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+      <SourceWizardDialog open={open} onOpenChange={setOpen} sourceId={editId} />
     </motion.div>
   );
 };
