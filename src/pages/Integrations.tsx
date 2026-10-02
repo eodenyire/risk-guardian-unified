@@ -1,5 +1,7 @@
 import { motion } from "framer-motion";
-import { Link2, RefreshCw, PlugZap, CheckCircle2, AlertCircle, Clock, XCircle, ArrowRightLeft, Activity } from "lucide-react";
+import { useState } from "react";
+import { Link2, RefreshCw, PlugZap, CheckCircle2, AlertCircle, Clock, XCircle, ArrowRightLeft, Activity, Upload, Download } from "lucide-react";
+import { useGrcSync, SyncResult } from "@/hooks/useSourceOps";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -41,11 +43,28 @@ const flowGroups = [
   },
 ];
 
+const GRC_TYPES = ["servicenow", "smartsheets"];
+
 const IntegrationsPage = () => {
   const { data: sources, isLoading } = useDataSourcesList();
   const { data: syncLogs } = useSyncLog();
   const testConn = useTestConnection();
   const sync = useTriggerSync();
+  const grc = useGrcSync();
+  const [busy, setBusy] = useState<string | null>(null);
+  const [results, setResults] = useState<Record<string, SyncResult & { direction: string }>>({});
+
+  const runGrc = async (row: DataSourceRow, direction: "push" | "pull") => {
+    setBusy(row.id);
+    try {
+      const r = await grc.mutateAsync({ data_source_id: row.id, direction });
+      setResults((p) => ({ ...p, [row.id]: { ...r, direction } }));
+    } catch (e) {
+      setResults((p) => ({ ...p, [row.id]: { ok: false, error: (e as Error).message, direction } }));
+    } finally {
+      setBusy(null);
+    }
+  };
 
   const connected = (sources ?? []).filter(s => s.integration_status === "connected").length;
   const total = (sources ?? []).length;
@@ -92,14 +111,54 @@ const IntegrationsPage = () => {
           <p className="mt-2 text-xs text-destructive bg-destructive/10 rounded p-2">{row.error_message}</p>
         )}
 
-        <div className="mt-4 flex gap-2">
+        <div className="mt-4 flex flex-wrap gap-2">
           <Button size="sm" variant="outline" onClick={() => testConn.mutate(row.id)} disabled={testConn.isPending}>
             <PlugZap className="h-3.5 w-3.5 mr-1.5" /> Test
           </Button>
-          <Button size="sm" onClick={() => sync.mutate(row)} disabled={sync.isPending || row.integration_status !== "connected"}>
-            <RefreshCw className={`h-3.5 w-3.5 mr-1.5 ${sync.isPending ? "animate-spin" : ""}`} /> Sync now
-          </Button>
+          {GRC_TYPES.includes(row.source_type) ? (
+            <>
+              <Button size="sm" onClick={() => runGrc(row, "push")} disabled={busy === row.id}>
+                <Upload className="h-3.5 w-3.5 mr-1.5" /> Send
+              </Button>
+              <Button size="sm" variant="secondary" onClick={() => runGrc(row, "pull")} disabled={busy === row.id}>
+                <Download className="h-3.5 w-3.5 mr-1.5" /> Pull
+              </Button>
+              {busy === row.id && <RefreshCw className="h-4 w-4 animate-spin self-center text-muted-foreground" />}
+            </>
+          ) : (
+            <Button size="sm" onClick={() => sync.mutate(row)} disabled={sync.isPending || row.integration_status !== "connected"}>
+              <RefreshCw className={`h-3.5 w-3.5 mr-1.5 ${sync.isPending ? "animate-spin" : ""}`} /> Sync now
+            </Button>
+          )}
         </div>
+
+        {results[row.id] && (() => {
+          const r = results[row.id];
+          return (
+            <div className="mt-3 rounded-md border p-3 text-xs space-y-2">
+              <div className="flex items-center justify-between">
+                <span className="font-medium">{r.direction === "push" ? "Send" : "Pull"} result</span>
+                <Badge className={statusBadge(r.error || (!r.processed && r.errors?.length) ? "error" : r.errors?.length ? "pending" : "connected")}>
+                  {r.error ? "failed" : r.status ?? "done"}
+                </Badge>
+              </div>
+              {r.error ? (
+                <p className="text-destructive">{r.error}</p>
+              ) : (
+                <p><span className="font-mono">{r.processed ?? 0}</span> record(s) succeeded, <span className="font-mono">{r.errors?.length ?? 0}</span> failed</p>
+              )}
+              {!!r.errors?.length && (
+                <ul className="max-h-40 overflow-y-auto space-y-1">
+                  {r.errors.map((e, i) => (
+                    <li key={i} className="bg-destructive/10 text-destructive rounded px-2 py-1">
+                      <span className="font-semibold">{e.ref}:</span> {e.error}
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </div>
+          );
+        })()}
       </CardContent>
     </Card>
   );
