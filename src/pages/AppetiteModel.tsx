@@ -86,7 +86,7 @@ const AppetiteModel = () => {
                         )) : <span className="text-xs text-muted-foreground">No indicators</span>}
                       </div>
                     </TableCell>
-                    <TableCell className="font-mono text-sm">{main?.s.utilisation != null ? `${Math.round(main.s.utilisation)}%` : "—"}</TableCell>
+                    <TableCell className="font-mono text-sm">{main?.s.utilisation != null ? Number.isFinite(main.s.utilisation) ? `${Math.round(main.s.utilisation)}%` : "Over limit" : "—"}</TableCell>
                     <TableCell><Badge variant="outline" className={`capitalize ${ragCls[s.appetiteRag]}`}>{s.appetiteRag === "grey" ? "n/a" : s.appetiteRag}</Badge></TableCell>
                     <TableCell className="text-sm capitalize">{main?.a.review_frequency.replace(/_/g, " ") ?? "—"}</TableCell>
                     <TableCell className="text-sm">{main?.a.next_review_date ? format(new Date(main.a.next_review_date), "d MMM yyyy") : "—"}</TableCell>
