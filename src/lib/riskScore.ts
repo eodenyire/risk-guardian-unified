@@ -39,8 +39,11 @@ export const buildPrtScores = (
 };
 
 export type ReviewState = "overdue" | "due_soon" | "current" | "unscheduled";
-export const reviewState = (d: string | null): ReviewState => {
+export const reviewState = (d: string | null, today = new Date()): ReviewState => {
   if (!d) return "unscheduled";
-  const days = (new Date(d).getTime() - Date.now()) / 86400000;
+  const due = new Date(`${d}T00:00:00`);
+  if (!Number.isFinite(due.getTime())) return "unscheduled";
+  const start = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+  const days = Math.round((due.getTime() - start.getTime()) / 86400000);
   return days < 0 ? "overdue" : days <= 30 ? "due_soon" : "current";
 };

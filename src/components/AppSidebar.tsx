@@ -10,12 +10,13 @@ import wekezaLogo from "@/assets/wekeza_logo.png";
 import { usePrincipalRiskTypes } from "@/hooks/useRiskUniverse";
 
 const navItems = [
-  { path: "/", label: "Dashboard", icon: LayoutDashboard },
+  { path: "/", label: "Risk Dashboard", icon: LayoutDashboard },
   { path: "/risk-data-master", label: "Risk Data Master", icon: Boxes },
   { path: "/risk-universe", label: "Risk Universe", icon: Network },
   { path: "/risk-register", label: "Risk Register", icon: ShieldAlert },
   { path: "/kri", label: "KRI Monitor", icon: BarChart3 },
   { path: "/appetite", label: "Risk Appetite", icon: Target },
+  { path: "/appetite-model", label: "Appetite Model", icon: Target },
   { path: "/appetite-heat-map", label: "Appetite vs Risk", icon: Grid3x3 },
   { path: "/controls", label: "Controls", icon: Settings2 },
   { path: "/rcsa", label: "RCSA", icon: FileCheck },
@@ -65,7 +66,7 @@ const AppSidebar = () => {
 
       <nav className="flex-1 py-3 space-y-1 px-2 overflow-y-auto">
         {navItems.map((item) => {
-          const isActive = location.pathname === item.path;
+          const isActive = location.pathname === item.path || (item.path === "/" && location.pathname === "/risk-dashboard");
           return (
             <Link key={item.path} to={item.path} className={linkClass(isActive)}>
               <item.icon className={`h-5 w-5 flex-shrink-0 ${isActive ? "text-shield" : ""}`} />
