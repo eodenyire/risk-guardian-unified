@@ -22,6 +22,8 @@ import {
   useIrrbbLimits, useScenarioResults, useUpsertGapEntry, useUpsertLimit, useUpsertScenario,
 } from "@/hooks/useIRRBB";
 import { useKRIs } from "@/hooks/useKRI";
+import { usePrincipalRiskTypes, useRiskAppetite, useContagionLinks } from "@/hooks/useRiskUniverse";
+import { PrtOverview } from "@/components/PrtDashboard";
 
 const fmt = (n: number, d = 1) =>
   n.toLocaleString(undefined, { minimumFractionDigits: d, maximumFractionDigits: d });
@@ -49,6 +51,10 @@ const IRRBBPage = () => {
   const { data: limits } = useIrrbbLimits();
   const { data: scenarios } = useScenarioResults();
   const { data: kris } = useKRIs();
+  const { data: prts } = usePrincipalRiskTypes();
+  const { data: appetite } = useRiskAppetite();
+  const { data: links } = useContagionLinks();
+  const prt = prts?.find((p) => p.code === "IRRBB");
 
   const upsertGap = useUpsertGapEntry();
   const delGap = useDeleteGapEntry();
@@ -267,13 +273,17 @@ const IRRBBPage = () => {
         </Card>
       )}
 
-      <Tabs defaultValue="gap">
-        <TabsList>
+      <Tabs defaultValue="overview">
+        <TabsList className="flex-wrap h-auto">
+          <TabsTrigger value="overview">Dashboard</TabsTrigger>
           <TabsTrigger value="gap">Repricing gap</TabsTrigger>
           <TabsTrigger value="scenarios">Rate shocks</TabsTrigger>
           <TabsTrigger value="limits">Limits</TabsTrigger>
           <TabsTrigger value="kris">IRRBB KRIs</TabsTrigger>
         </TabsList>
+        <TabsContent value="overview" className="mt-4">
+          {prt ? <PrtOverview prt={prt} kris={irrbbKris} allKris={kris ?? []} appetite={(appetite ?? []).filter((a) => a.risk_type_id === prt.id)} links={links ?? []} /> : <Skeleton className="h-64 w-full" />}
+        </TabsContent>
 
         {/* -------- gap ladder -------- */}
         <TabsContent value="gap" className="space-y-4">
