@@ -286,6 +286,17 @@ const RiskAppetitePage = () => {
               <Label>Escalation trigger</Label>
               <Input value={form.escalation_trigger} onChange={(e) => setForm({ ...form, escalation_trigger: e.target.value })} />
             </div>
+            <div className="grid gap-2">
+              <Label>Statement status</Label>
+              <Select value={form.status} onValueChange={(status) => setForm({ ...form, status })}>
+                <SelectTrigger aria-label="Statement status"><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  {Array.from(new Set([form.status, "active", "draft", "under_review", "retired"])).map((status) => (
+                    <SelectItem key={status} value={status}>{status.replace(/_/g, " ")}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
             <div className="grid grid-cols-3 gap-3">
               <div className="grid gap-2">
                 <Label>Approved by</Label>

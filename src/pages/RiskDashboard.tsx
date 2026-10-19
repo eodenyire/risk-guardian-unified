@@ -26,14 +26,14 @@ const RiskDashboard = () => {
   const { data: links, isLoading: l4 } = useContagionLinks();
 
   const scores = useMemo(
-    () => buildPrtScores(prts ?? [], (kris ?? []) as never, appetite ?? [], links ?? []),
+    () => buildPrtScores(prts ?? [], kris ?? [], appetite ?? [], links ?? []),
     [prts, kris, appetite, links],
   );
 
   if (l1 || l2 || l3 || l4) return <div className="space-y-4">{[0, 1, 2].map((i) => <Skeleton key={i} className="h-32 w-full" />)}</div>;
 
   const scored = scores.filter((s) => s.score !== null);
-  const central = scored.length ? Math.round(scored.reduce((t, s) => t + s.score!, 0) / scored.length) : null;
+  const central = scored.length ? Math.round(scored.reduce((t, s) => t + (s.score ?? 0), 0) / scored.length) : null;
   const centralRag = scoreRag(central);
   const apAll = scores.flatMap((s) => s.appetite);
   const apCount = (r: Rag) => apAll.filter((x) => x.s.rag === r).length;
@@ -103,7 +103,7 @@ const RiskDashboard = () => {
                   {g.list.map((s) => (
                     <Link key={s.prt.id} to={prtPath(s.prt.code)} className="rounded-lg border p-3 hover:bg-muted/50 transition-colors">
                       <div className="flex justify-between items-start gap-2">
-                        <div className="font-medium text-sm">{s.prt.name}</div>
+                        <div className="font-medium text-sm break-words min-w-0">{s.prt.name}</div>
                         <Badge variant="outline" className={`capitalize ${ragCls[s.rag]}`}>{s.score ?? "—"}</Badge>
                       </div>
                       <div className="h-1.5 rounded bg-muted mt-2 overflow-hidden">

@@ -6,7 +6,8 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import AppLayout from "./components/AppLayout";
 import ProtectedRoute from "./components/ProtectedRoute";
 import { AuthProvider } from "./hooks/useAuth";
-import Index from "./pages/Index";
+import RiskDashboard from "./pages/RiskDashboard";
+import AppetiteModel from "./pages/AppetiteModel";
 import Auth from "./pages/Auth";
 import Settings from "./pages/Settings";
 import RiskRegister from "./pages/RiskRegister";
@@ -38,7 +39,9 @@ const App = () => (
           <Routes>
             <Route path="/auth" element={<Auth />} />
             <Route element={<ProtectedRoute><AppLayout /></ProtectedRoute>}>
-              <Route path="/" element={<Index />} />
+              <Route path="/" element={<RiskDashboard />} />
+              <Route path="/risk-dashboard" element={<RiskDashboard />} />
+              <Route path="/appetite-model" element={<AppetiteModel />} />
               <Route path="/risk-universe" element={<RiskUniverse />} />
               <Route path="/risk-register" element={<RiskRegister />} />
               <Route path="/appetite" element={<RiskAppetite />} />

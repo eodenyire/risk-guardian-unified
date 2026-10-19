@@ -1,4 +1,4 @@
-import { useMemo } from "react";
+import { Fragment, useMemo } from "react";
 import { Link } from "react-router-dom";
 import { Target } from "lucide-react";
 import { format } from "date-fns";
@@ -9,7 +9,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { usePrincipalRiskTypes, useRiskAppetite, useContagionLinks, Rag } from "@/hooks/useRiskUniverse";
 import { useKRIs } from "@/hooks/useKRI";
 import { buildPrtScores, reviewState, ReviewState } from "@/lib/riskScore";
-import { UTILISATION_BANDS } from "@/lib/appetite";
+import { bandRag, UTILISATION_BANDS } from "@/lib/appetite";
 
 const ragCls: Record<Rag, string> = {
   red: "bg-risk-red/15 text-risk-red border-risk-red/30",
@@ -29,14 +29,14 @@ const AppetiteModel = () => {
   const { data: prts, isLoading: l1 } = usePrincipalRiskTypes();
   const { data: kris, isLoading: l2 } = useKRIs();
   const { data: appetite, isLoading: l3 } = useRiskAppetite();
-  const { data: links } = useContagionLinks();
+  const { data: links, isLoading: l4 } = useContagionLinks();
 
   const scores = useMemo(
-    () => buildPrtScores(prts ?? [], (kris ?? []) as never, appetite ?? [], links ?? []),
+    () => buildPrtScores(prts ?? [], kris ?? [], appetite ?? [], links ?? []),
     [prts, kris, appetite, links],
   );
 
-  if (l1 || l2 || l3) return <div className="space-y-4">{[0, 1].map((i) => <Skeleton key={i} className="h-40 w-full" />)}</div>;
+  if (l1 || l2 || l3 || l4) return <div className="space-y-4">{[0, 1].map((i) => <Skeleton key={i} className="h-40 w-full" />)}</div>;
 
   const all = scores.flatMap((s) => s.appetite.map((x) => ({ ...x, prt: s.prt })));
   const reviews = (r: ReviewState) => all.filter((x) => reviewState(x.a.next_review_date) === r).length;
@@ -68,7 +68,7 @@ const AppetiteModel = () => {
           <Table>
             <TableHeader><TableRow>
               <TableHead>Risk type</TableHead><TableHead>Appetite level</TableHead><TableHead>Appetite drivers</TableHead>
-              <TableHead>Tolerance used</TableHead><TableHead>Status</TableHead><TableHead>Next review</TableHead><TableHead>Review status</TableHead>
+              <TableHead>Tolerance used</TableHead><TableHead>Status</TableHead><TableHead>Review cycle</TableHead><TableHead>Next review</TableHead><TableHead>Review status</TableHead><TableHead>Statement status</TableHead>
             </TableRow></TableHeader>
             <TableBody>
               {scores.map((s) => {
@@ -88,8 +88,10 @@ const AppetiteModel = () => {
                     </TableCell>
                     <TableCell className="font-mono text-sm">{main?.s.utilisation != null ? `${Math.round(main.s.utilisation)}%` : "—"}</TableCell>
                     <TableCell><Badge variant="outline" className={`capitalize ${ragCls[s.appetiteRag]}`}>{s.appetiteRag === "grey" ? "n/a" : s.appetiteRag}</Badge></TableCell>
+                    <TableCell className="text-sm capitalize">{main?.a.review_frequency.replace(/_/g, " ") ?? "—"}</TableCell>
                     <TableCell className="text-sm">{main?.a.next_review_date ? format(new Date(main.a.next_review_date), "d MMM yyyy") : "—"}</TableCell>
                     <TableCell>{main ? <Badge variant="outline" className={reviewCls[rs]}>{reviewLabel[rs]}</Badge> : <span className="text-xs text-muted-foreground">No statement</span>}</TableCell>
+                    <TableCell className="capitalize">{main?.a.status ?? "—"}</TableCell>
                   </TableRow>
                 );
               })}
@@ -106,11 +108,11 @@ const AppetiteModel = () => {
             <div />
             {UTILISATION_BANDS.map((b) => <div key={b.label} className="text-xs text-center text-muted-foreground">{b.label}</div>)}
             {LEVELS.map((lv) => (
-              <>
+              <Fragment key={lv}>
                 <div key={lv} className="text-sm capitalize flex items-center">{lv}</div>
                 {UTILISATION_BANDS.map((_, bi) => {
                   const items = cell(lv, bi);
-                  const tone = bi >= 4 || (bi >= 2 && ["averse", "low"].includes(lv)) ? "red" : bi >= 2 || (bi >= 1 && lv === "averse") ? "amber" : "green";
+                  const tone = bandRag(bi);
                   return (
                     <div key={lv + bi} title={items.map((x) => x.prt.name).join(", ")}
                       className={`rounded-md border min-h-[56px] p-1 text-xs ${ragCls[tone as Rag]}`}>
@@ -119,7 +121,7 @@ const AppetiteModel = () => {
                     </div>
                   );
                 })}
-              </>
+              </Fragment>
             ))}
           </div>
           <p className="text-xs text-muted-foreground mt-3">Rows: approved appetite level. Columns: share of tolerance limit consumed by the worst live indicator.</p>
